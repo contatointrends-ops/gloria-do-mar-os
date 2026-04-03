@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glória do Mar — Mapa do App</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+/* ── RESET ──────────────────────────────────────────────── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#0a192f; --navy2:#0f2540; --navy3:#1e3a5f;
+  --gold:#d4af37; --gold2:#f0d060; --golddim:rgba(212,175,55,.12);
+  --teal:#06b6d4; --tealdim:rgba(6,182,212,.12);
+  --green:#22c55e; --greendim:rgba(34,197,94,.12);
+  --amber:#f59e0b; --amberdim:rgba(245,158,11,.12);
+  --red:#ef4444; --reddim:rgba(239,68,68,.12);
+  --purple:#8b5cf6; --purpledim:rgba(139,92,246,.12);
+  --text:#e2e8f0; --muted:#94a3b8; --white:#fff;
+  --serif:'Playfair Display',Georgia,serif;
+  --sans:'Outfit',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--navy);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ── HEADER ─────────────────────────────────────────────── */
+.page-header{
+  text-align:center; padding:56px 24px 40px;
+  background:linear-gradient(180deg,rgba(6,182,212,.06) 0%,transparent 100%);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.page-header .badge{
+  display:inline-flex;align-items:center;gap:7px;
+  background:var(--golddim);border:1px solid rgba(212,175,55,.3);
+  padding:6px 18px;border-radius:99px;
+  font-size:.72rem;font-weight:700;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;
+  margin-bottom:20px;
+}
+.page-header h1{font-family:var(--serif);font-size:clamp(2rem,5vw,3.2rem);color:var(--white);margin-bottom:10px}
+.page-header h1 em{color:var(--gold);font-style:italic}
+.page-header p{font-size:1rem;color:var(--muted);max-width:560px;margin:0 auto}
+
+/* ── LEGEND ─────────────────────────────────────────────── */
+.legend{
+  display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+  padding:20px 24px 32px;
+}
+.legend-item{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);
+  padding:7px 16px;border-radius:99px;font-size:.78rem;font-weight:600;
+}
+.legend-dot{width:10px;height:10px;border-radius:50%}
+
+/* ── MAIN LAYOUT ─────────────────────────────────────────── */
+.map-wrapper{padding:0 24px 80px;max-width:1300px;margin:0 auto}
+
+/* ── SECTION LABEL ───────────────────────────────────────── */
+.section-label{
+  display:flex;align-items:center;gap:12px;
+  font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);margin:48px 0 20px;
+}
+.section-label::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.07)}
+
+/* ── FLOW ROWS ───────────────────────────────────────────── */
+.flow-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+
+/* ── SCREEN CARD ─────────────────────────────────────────── */
+.screen{
+  background:var(--navy2);border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;padding:0;overflow:hidden;
+  flex:1;min-width:260px;max-width:420px;
+  transition:box-shadow .3s,transform .3s;
+  cursor:default;
+}
+.screen:hover{transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.screen-header{
+  padding:18px 20px 14px;
+  display:flex;align-items:flex-start;gap:12px;
+}
+.screen-icon{
+  width:40px;height:40px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.95rem;flex-shrink:0;
+}
+.screen-title{font-size:.95rem;font-weight:700;color:var(--white);margin-bottom:3px}
+.screen-sub{font-size:.73rem;color:var(--muted);line-height:1.4}
+.screen-body{padding:0 20px 20px;display:flex;flex-direction:column;gap:8px}
+
+/* ── BUTTON NODE ─────────────────────────────────────────── */
+.btn-node{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);
+  border-radius:10px;padding:10px 13px;
+  transition:all .2s;cursor:pointer;
+  position:relative;
+}
+.btn-node:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15)}
+.btn-node .btn-icon{
+  width:30px;height:30px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.78rem;flex-shrink:0;
+}
+.btn-info{flex:1}
+.btn-label{font-size:.82rem;font-weight:700;color:var(--white)}
+.btn-desc{font-size:.7rem;color:var(--muted);margin-top:2px;line-height:1.4}
+.btn-arrow{
+  display:flex;align-items:center;gap:5px;
+  font-size:.68rem;font-weight:700;letter-spacing:.04em;
+  padding:3px 10px;border-radius:99px;flex-shrink:0;white-space:nowrap;
+}
+
+/* ── ROLE GRID ───────────────────────────────────────────── */
+.role-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+
+/* ── ROLE CARD ───────────────────────────────────────────── */
+.role-card{
+  border-radius:18px;overflow:hidden;
+  border:1px solid rgba(255,255,255,.08);
+  background:var(--navy2);
+}
+.role-header{padding:18px 20px 14px;display:flex;align-items:center;gap:12px}
+.role-avatar{
+  width:42px;height:42px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;font-size:1rem;
+}
+.role-name{font-size:.95rem;font-weight:700;color:var(--white)}
+.role-desc{font-size:.72rem;color:var(--muted);margin-top:2px}
+.role-views{padding:0 20px 20px;display:flex;flex-direction:column;gap:6px}
+.view-chip{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  border-radius:8px;padding:8px 12px;
+}
+.view-chip-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.view-chip-text{flex:1;font-size:.78rem;font-weight:600;color:var(--text)}
+.view-chip-sub{font-size:.67rem;color:var(--muted);display:block;margin-top:1px}
+
+/* ── FLOW ARROW ──────────────────────────────────────────── */
+.flow-arrow{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:8px 0;
+  font-size:.7rem;color:var(--muted);gap:4px;
+}
+.flow-arrow i{color:var(--gold);font-size:1.1rem}
+
+/* ── FULL FLOW ───────────────────────────────────────────── */
+.full-flow{
+  background:var(--navy2);border:1px solid rgba(255,255,255,.07);
+  border-radius:18px;padding:28px;margin-bottom:16px;
+}
+.full-flow h3{font-family:var(--serif);font-size:1.1rem;color:var(--white);margin-bottom:20px}
+.flow-steps{display:flex;align-items:flex-start;gap:0;flex-wrap:wrap}
+.flow-step{
+  display:flex;flex-direction:column;align-items:center;
+  flex:1;min-width:140px;text-align:center;position:relative;padding:0 8px;
+}
+.flow-step-num{
+  width:48px;height:48px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;font-weight:800;font-family:var(--serif);
+  margin-bottom:12px;flex-shrink:0;
+}
+.flow-step-label{font-size:.82rem;font-weight:700;color:var(--white);margin-bottom:4px}
+.flow-step-sub{font-size:.7rem;color:var(--muted);line-height:1.5}
+.flow-step-connector{
+  position:absolute;top:24px;right:-12px;
+  color:rgba(212,175,55,.4);font-size:.85rem;
+  display:flex;align-items:center;
+}
+@media(max-width:700px){
+  .flow-step-connector{display:none}
+  .flow-steps{gap:16px}
+}
+
+/* ── COLORS ──────────────────────────────────────────────── */
+.c-gold{background:var(--golddim);color:var(--gold);border-color:rgba(212,175,55,.2)}
+.c-teal{background:var(--tealdim);color:var(--teal);border-color:rgba(6,182,212,.2)}
+.c-green{background:var(--greendim);color:var(--green);border-color:rgba(34,197,94,.2)}
+.c-amber{background:var(--amberdim);color:var(--amber);border-color:rgba(245,158,11,.2)}
+.c-red{background:var(--reddim);color:var(--red);border-color:rgba(239,68,68,.2)}
+.c-purple{background:var(--purpledim);color:var(--purple);border-color:rgba(139,92,246,.2)}
+.bc-gold{border-top:3px solid var(--gold)}
+.bc-teal{border-top:3px solid var(--teal)}
+.bc-green{border-top:3px solid var(--green)}
+.bc-amber{border-top:3px solid var(--amber)}
+.bc-red{border-top:3px solid var(--red)}
+.bc-purple{border-top:3px solid var(--purple)}
+
+/* ── TOOLTIP ─────────────────────────────────────────────── */
+.tooltip-wrap{position:relative}
+.tooltip-wrap:hover .tooltip{display:block}
+.tooltip{
+  display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  background:rgba(15,37,64,.98);border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;padding:10px 14px;min-width:200px;max-width:280px;
+  font-size:.75rem;color:var(--text);line-height:1.6;z-index:100;
+  box-shadow:0 12px 40px rgba(0,0,0,.5);
+  pointer-events:none;
+}
+.tooltip strong{color:var(--gold);display:block;margin-bottom:4px}
+
+/* ── PRINT ───────────────────────────────────────────────── */
+.print-btn{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--gold);color:var(--navy);
+  border:none;border-radius:12px;padding:12px 22px;
+  font-size:.85rem;font-weight:700;cursor:pointer;
+  box-shadow:0 8px 24px rgba(212,175,55,.4);
+  display:flex;align-items:center;gap:8px;transition:all .2s;z-index:500;
+}
+.print-btn:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(212,175,55,.55)}
+@media print{.print-btn{display:none}.page-header{padding:24px}.map-wrapper{padding:0 12px 40px}}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ────────────────────────────────────────────── -->
+<div class="page-header">
+  <div class="badge"><i class="fas fa-map"></i> Guia Visual</div>
+  <h1>Mapa do App<br><em>Glória do Mar</em></h1>
+  <p>Entenda cada tela, botão e fluxo do sistema — da landing page até o NEXUS iA</p>
+</div>
+
+<!-- ── LEGEND ─────────────────────────────────────────────── -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--teal)"></div>Cliente</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Garçom</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Central / Caixa</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Cozinha / Bar</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--purple)"></div>Gestor NEXUS</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--gold)"></div>Landing Page</div>
+</div>
+
+<div class="map-wrapper">
+
+  <!-- ══ 1. LANDING PAGE ════════════════════════════════════ -->
+  <div class="section-label"><i class="fas fa-globe"></i> 1. Landing Page — gloria-do-mar/landing.html</div>
+
+  <div class="flow-row">
+    <div class="screen bc-gold" style="max-width:100%;flex:1">
+      <div class="screen-header">
+        <div class="screen-icon c-gold"><i class="fas fa-home"></i></div>
+        <div>
+          <div class="screen-title">Página Inicial (landing.html)</div>
+          <div class="screen-sub">Vitrine pública do restaurante — qualquer visitante acessa sem login</div>
+        </div>
+      </div>
+      <div class="screen-body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px">
+        <div class="btn-node tooltip-wrap">
+          <div class="btn-icon c-gold"><i class="fas fa-calendar-check"></i></div>
+          <div class="btn-info">
+            <div class="btn-label">Reservar Mesa</div>
+            <div class="btn-desc">Botão no topo e hero</div>
+          </div>
+          <div class="btn-arrow c-gold">→ App</div>
+          <div class="tooltip"><strong>Reservar Mesa</strong>Abre o gloria_mvp_nexus.html direto na tela de login. Cliente escolhe "Cliente" e vai para Reservas VIP.</div>
+        </div>
+        <div class="btn-node tooltip-wrap">
+          <div class="btn-icon c-teal"><i class="fas fa-mobile-alt"></i></div>
+          <div class="btn-info">
+            <div class="btn-label">Abrir Cardápio</div>
+            <div class="btn-desc">Botão no nav e hero</div>
+          </div>
+          <div class="btn-arrow c-teal">→ App</div>
+          <div class="tooltip"><strong>Abrir Cardápio</strong>Leva para gloria_mvp_nexus.html. Cliente vê o menu com fotos e preços para fazer pedidos.</div>
+        </div>
+        <div class="btn-node tooltip-wrap">
+          <div class="btn-icon" style="background:rgba(37,211,102,.15);color:#25d366"><i class="fab fa-whatsapp"></i></div>
+          <div class="btn-info">
+            <div class="btn-label">Falar no WhatsApp</div>
+            <div class="btn-desc">Contato direto</div>
+          </div>
+          <div class="btn-arrow" style="background:rgba(37,211,102,.15);color:#25d366">↗ WA</div>
+          <div class="tooltip"><strong>WhatsApp</strong>Abre o WhatsApp com mensagem pré-preenchida: "Gostaria de fazer uma reserva no Glória do Mar."</div>
+        </div>
+        <div class="btn-node tooltip-wrap">
+          <div class="btn-icon c-teal"><i class="fas fa-download"></i></div>
+          <div class="btn-info">
+            <div class="btn-label">Instalar App Grátis</div>
+            <div class="btn-desc">Seção "Sua mesa, seu ritmo"</div>
+          </div>
+          <div class="btn-arrow c-teal">PWA</div>
+          <div class="tooltip"><strong>Instalar App</strong>Abre o prompt nativo do browser para adicionar o app à tela inicial do celular — sem precisar de App Store. Funciona no Chrome (Android) e Safari (iPhone).</div>
+        </div>
+        <div class="btn-node tooltip-wrap">
+          <div class="btn-icon c-gold"><i class="fas fa-book-open"></i></div>
+          <div class="btn-info">
+            <div class="btn-label">Ver Cardápio Completo</div>
+            <div class="btn-desc">Seção de menu (fotos clicáveis)</div>
+          </div>
+          <div class="btn-arrow c-gold">→ App</div>
+          <div class="tooltip"><strong>Cardápio</strong>Qualquer foto de prato clicada abre o app. Mostra pratos como Polvo Grelhado R$95, Aperol Spritz R$45, Corona R$22, etc.</div>
+        </div>
+        <div class="btn-node tooltip-wrap">
+          <div class="btn-icon" style="background:rgba(255,255,255,.06);color:var(--muted)"><i class="fab fa-instagram"></i></div>
+          <div class="btn-info">
+            <div class="btn-label">Redes Sociais</div>
+            <div class="btn-desc">Instagram, WhatsApp, TikTok</div>
+          </div>
+          <div class="btn-arrow" style="background:rgba(255,255,255,.06);color:var(--muted)">↗</div>
+          <div class="tooltip"><strong>Redes Sociais</strong>Links no rodapé para as redes do restaurante. Abrem em nova aba.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 2. TELA DE LOGIN ════════════════════════════════════ -->
+  <div class="section-label"><i class="fas fa-sign-in-alt"></i> 2. Tela de Login — Seleção de Perfil</div>
+  <div class="full-flow">
+    <h3><i class="fas fa-route" style="color:var(--gold);margin-right:8px"></i>Fluxo de Entrada</h3>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-step-num" style="background:var(--golddim);color:var(--gold)"><i class="fas fa-globe"></i></div>
+        <div class="flow-step-label">Acessa o App</div>
+        <div class="flow-step-sub">Via landing page, link ou ícone instalado na tela inicial</div>
+        <div class="flow-step-connector"><i class="fas fa-chevron-right"></i></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num" style="background:var(--tealdim);color:var(--teal)"><i class="fas fa-user-circle"></i></div>
+        <div class="flow-step-label">Escolhe o Perfil</div>
+        <div class="flow-step-sub">Cliente, Garçom, Central, Cozinha ou Gestor</div>
+        <div class="flow-step-connector"><i class="fas fa-chevron-right"></i></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num" style="background:rgba(212,175,55,.15);color:var(--gold)"><i class="fas fa-store"></i></div>
+        <div class="flow-step-label">Seleciona o Local</div>
+        <div class="flow-step-sub">Glória do Mar (Tabatinga) ou Praia Nobre Lounge</div>
+        <div class="flow-step-connector"><i class="fas fa-chevron-right"></i></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num" style="background:var(--greendim);color:var(--green)"><i class="fas fa-check"></i></div>
+        <div class="flow-step-label">Entra no Sistema</div>
+        <div class="flow-step-sub">Cada perfil vê apenas as telas do seu papel</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 3. PERFIS ══════════════════════════════════════════ -->
+  <div class="section-label"><i class="fas fa-users"></i> 3. Perfis & Telas de Cada Um</div>
+  <div class="role-grid">
+
+    <!-- CLIENTE -->
+    <div class="role-card bc-teal">
+      <div class="role-header">
+        <div class="role-avatar c-teal"><i class="fas fa-user"></i></div>
+        <div>
+          <div class="role-name">Cliente</div>
+          <div class="role-desc">Acesso via app instalado ou QR code na mesa</div>
+        </div>
+      </div>
+      <div class="role-views">
+        <div class="view-chip">
+          <div class="view-chip-dot" style="background:var(--teal)"></div>
+          <div><span class="view-chip-text">🏠 Início & Ofertas</span><span class="view-chip-sub">Fotos do cardápio, preços e promoções</span></div>
+        </div>
+        <div class="view-chip">
+          <div class="view-chip-dot" style="background:var(--teal)"></div>
+          <div><span class="view-chip-text">🏖️ Reservas VIP</span><span class="view-chip-sub">Escolher mesa, horário e pré-pedido</span></div>
+        </div>
+        <div class="view-chip">
+          <div class="view-chip-dot" style="background:var(--teal)"></div>
+          <div><span class="view-chip-text">📱 Mesa Viva</span><span class="view-chip-sub">Pedidos em tempo real, timeline e conta</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GARÇOM -->
+    <div class="role-card bc-green">
+      <div class="role-header">
+        <div class="role-avatar c-green"><i class="fas fa-concierge-bell"></i></div>
+        <div>
+          <div class="role-name">Garçom</div>
+          <div class="role-desc">Atende e registra pedidos pelas mesas</div>
+        </div>
+      </div>
+      <div class="role-views">
+        <div class="view-chip">
+          <div class="view-chip-dot" style="background:var(--green)"></div>
+          <div><span class="view-chip-text">🏠 Cardápio</span><span class="view-chip-sub">Mostra itens ao cliente e monta o pedido</span></div>
+        </div>
+        <div class="view-chip">
+          <div class="view-chip-dot" style="background:var(--green)"></div>
+          <div><span class="view-chip-text">📱 Mesa Viva</span><span class="view-chip-sub">Identifica a mesa e envia pedido para central</span></div>
+        </div>
+        <div class="view-chip">
+          <div class="view-chip-dot" style="background:var(--green)"></div>
+          <div><span class="view-chip-text">🖥️ Caixa (leitura)</span><span class="view-chip-sub">Vê o status dos pedidos da mesa</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CENTRAL -->
+    <div class="role-card bc-amber">
+      <div class="role-header">
+        <div class="role-avatar c-amber"><i class="fas fa-cash-register"></i></div>
+        <div>
+          <div class="role-name">Central / Caixa</div>
+          <div class="role-desc">Aprova pedidos antes de ir à cozinha</div>
+        </div>
+      </div>
+      <div class="role-views">
+        <div class="view-chip">
+          <div class="view-chip-dot" style="background:var(--amber)"></div>
+          <div><span class="view-chip-text">✅ Caixa / Triagem</span><span class="view-chip-sub">Aprova ou rejeita cada pedido recebido</span></div>
+        </div>
+        <div class="view-chip">
+          <div class="view-chip-dot" style="background:var(--amber)"></div>
+          <div><span class="view-chip-text">📊 Dashboard</span><span class="view-chip-sub">Faturamento, ocupação e métricas do dia</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COZINHA -->
+    <div class="role-card bc-red">
+      <div class="role-header">
+        <div class="role-avatar c-red"><i class="fas fa-fire"></i></div>
+        <div>
+          <div class="role-name">Cozinha / Bar</div>
+          <div class="role-desc">Tela fixa sempre aberta — atualizaçao a cada 20s</div>
+        </div>
+      </div>
+      <div class="role-views">
+        <div class="view-chip" style="border-color:rgba(239,68,68,.3);background:var(--reddim)">
+          <div class="view-chip-dot" style="background:var(--red)"></div>
+          <div><span class="view-chip-text">🔥 KDS Full-Screen</span><span class="view-chip-sub">3 colunas: Aguardando → Preparando → Pronto</span></div>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:4px">
+          <div style="flex:1;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:8px;text-align:center;font-size:.7rem;color:var(--amber);font-weight:700">⏳ Aguardando</div>
+          <div style="flex:1;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:8px;text-align:center;font-size:.7rem;color:var(--red);font-weight:700">🍳 Preparando</div>
+          <div style="flex:1;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:8px;padding:8px;text-align:center;font-size:.7rem;color:var(--green);font-weight:700">✅ Pronto!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GESTOR NEXUS -->
+    <div class="role-card bc-purple" style="grid-column:1/-1">
+      <div class="role-header">
+        <div class="role-avatar c-purple"><i class="fas fa-brain"></i></div>
+        <div>
+          <div class="role-name">Gestor NEXUS</div>
+          <div class="role-desc">Acesso completo — todas as telas + IA cognitiva</div>
+        </div>
+      </div>
+      <div class="role-views" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px">
+        <div class="view-chip">
+          <div class="view-chip-dot" style="background:var(--amber)"></div>
+          <div><span class="view-chip-text">🖥️ Caixa / Triagem</span><span class="view-chip-sub">Aprovação de pedidos</span></div>
+        </div>
+        <div class="view-chip">
+          <div class="view-chip-dot" style="background:var(--red)"></div>
+          <div><span class="view-chip-text">🔥 KDS Produção</span><span class="view-chip-sub">Status da cozinha</span></div>
+        </div>
+        <div class="view-chip">
+          <div class="view-chip-dot" style="background:var(--amber)"></div>
+          <div><span class="view-chip-text">📊 Dashboard</span><span class="view-chip-sub">Métricas e faturamento</span></div>
+        </div>
+        <div class="view-chip" style="border-color:rgba(6,182,212,.3);background:var(--tealdim)">
+          <div class="view-chip-dot" style="background:var(--teal)"></div>
+          <div><span class="view-chip-text">⚡ NEXUS iA Core</span><span class="view-chip-sub">Analyst · Critic · Creative em tempo real</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ 4. FLUXO DO PEDIDO ══════════════════════════════════ -->
+  <div class="section-label"><i class="fas fa-route"></i> 4. Fluxo Completo de um Pedido</div>
+  <div class="full-flow">
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-step-num" style="background:var(--tealdim);color:var(--teal)">1</div>
+        <div class="flow-step-label">Cliente / Garçom</div>
+        <div class="flow-step-sub">Abre o cardápio, toca nas fotos e monta o pedido</div>
+        <div class="flow-step-connector"><i class="fas fa-chevron-right"></i></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num" style="background:var(--greendim);color:var(--green)">2</div>
+        <div class="flow-step-label">Envia Pedido</div>
+        <div class="flow-step-sub">Clica em "Enviar Pedido" — vai para a Central</div>
+        <div class="flow-step-connector"><i class="fas fa-chevron-right"></i></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num" style="background:var(--amberdim);color:var(--amber)">3</div>
+        <div class="flow-step-label">Central Aprova</div>
+        <div class="flow-step-sub">Caixa analisa e clica "Aprovar" — vai à cozinha</div>
+        <div class="flow-step-connector"><i class="fas fa-chevron-right"></i></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num" style="background:var(--reddim);color:var(--red)">4</div>
+        <div class="flow-step-label">Cozinha / Bar</div>
+        <div class="flow-step-sub">Aparece no KDS — muda para "Preparando"</div>
+        <div class="flow-step-connector"><i class="fas fa-chevron-right"></i></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num" style="background:var(--greendim);color:var(--green)">5</div>
+        <div class="flow-step-label">Pronto!</div>
+        <div class="flow-step-sub">KDS marca como pronto — garçom leva à mesa</div>
+        <div class="flow-step-connector"><i class="fas fa-chevron-right"></i></div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num" style="background:var(--purpledim);color:var(--purple)">✦</div>
+        <div class="flow-step-label">NEXUS Analisa</div>
+        <div class="flow-step-sub">IA detecta gargalos e sugere ações ao gestor</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 5. TELAS EM DETALHE ═════════════════════════════════ -->
+  <div class="section-label"><i class="fas fa-th-large"></i> 5. Cada Tela em Detalhe</div>
+
+  <!-- Caixa -->
+  <div class="flow-row">
+    <div class="screen bc-amber">
+      <div class="screen-header">
+        <div class="screen-icon c-amber"><i class="fas fa-cash-register"></i></div>
+        <div>
+          <div class="screen-title">Caixa / Triagem</div>
+          <div class="screen-sub">Central de aprovação de pedidos — quem vê: Caixa e Gestor</div>
+        </div>
+      </div>
+      <div class="screen-body">
+        <div class="btn-node tooltip-wrap">
+          <div class="btn-icon c-green"><i class="fas fa-check"></i></div>
+          <div class="btn-info"><div class="btn-label">Aprovar Pedido</div><div class="btn-desc">Envia para a fila da cozinha (KDS)</div></div>
+          <div class="btn-arrow c-green">→ KDS</div>
+          <div class="tooltip"><strong>Aprovar</strong>O pedido muda de "Pendente" para "Aprovado" e aparece imediatamente no KDS da cozinha.</div>
+        </div>
+        <div class="btn-node tooltip-wrap">
+          <div class="btn-icon c-red"><i class="fas fa-times"></i></div>
+          <div class="btn-info"><div class="btn-label">Rejeitar Pedido</div><div class="btn-desc">Cancela e notifica o garçom</div></div>
+          <div class="btn-arrow c-red">✕ Cancela</div>
+          <div class="tooltip"><strong>Rejeitar</strong>O pedido é cancelado. O garçom vê o status "Rejeitado" na Mesa Viva e pode refazer o pedido.</div>
+        </div>
+        <div class="btn-node tooltip-wrap">
+          <div class="btn-icon c-amber"><i class="fas fa-expand"></i></div>
+          <div class="btn-info"><div class="btn-label">Ver Detalhes</div><div class="btn-desc">Expande o pedido com todos os itens</div></div>
+          <div class="btn-arrow c-amber">+ Info</div>
+          <div class="tooltip"><strong>Detalhes</strong>Mostra todos os itens, mesa de origem, garçom responsável e valor total do pedido.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mesa Viva -->
+    <div class="screen bc-teal">
+      <div class="screen-header">
+        <div class="screen-icon c-teal"><i class="fas fa-mobile-alt"></i></div>
+        <div>
+          <div class="screen-title">Mesa Viva</div>
+          <div class="screen-sub">Pedidos em tempo real por mesa — quem vê: Cliente e Garçom</div>
+        </div>
+      </div>
+      <div class="screen-body">
+        <div class="btn-node tooltip-wrap">
+          <div class="btn-icon c-teal"><i class="fas fa-plus"></i></div>
+          <div class="btn-info"><div class="btn-label">+ Adicionar Item</div><div class="btn-desc">Clica na foto ou no botão do cardápio</div></div>
+          <div class="btn-arrow c-teal">Carrinho</div>
+          <div class="tooltip"><strong>Adicionar</strong>Toca na foto do prato — item vai para o rascunho do pedido. Pode adicionar vários antes de enviar.</div>
+        </div>
+        <div class="btn-node tooltip-wrap">
+          <div class="btn-icon c-green"><i class="fas fa-paper-plane"></i></div>
+          <div class="btn-info"><div class="btn-label">Enviar Pedido</div><div class="btn-desc">Manda para a central aprovar</div></div>
+          <div class="btn-arrow c-green">→ Central</div>
+          <div class="tooltip"><strong>Enviar</strong>O pedido vai para a fila de aprovação da Central / Caixa. Aparece na timeline como "NEXUS Analisando".</div>
+        </div>
+        <div class="btn-node tooltip-wrap">
+          <div class="btn-icon c-red"><i class="fas fa-receipt"></i></div>
+          <div class="btn-info"><div class="btn-label">Pedir Conta</div><div class="btn-desc">Encerra a sessão da mesa</div></div>
+          <div class="btn-arrow c-red">Encerrar</div>
+          <div class="tooltip"><strong>Pedir Conta</strong>Envia solicitação de fechamento para a Central. O garçom leva a conta impressa ou via QR code de pagamento.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEXUS iA -->
+    <div class="screen bc-purple">
+      <div class="screen-header">
+        <div class="screen-icon c-purple"><i class="fas fa-brain"></i></div>
+        <div>
+          <div class="screen-title">NEXUS iA Core</div>
+          <div class="screen-sub">IA cognitiva em tempo real — só o Gestor NEXUS acessa</div>
+        </div>
+      </div>
+      <div class="screen-body">
+        <div class="btn-node tooltip-wrap">
+          <div class="btn-icon c-teal"><i class="fas fa-sync-alt"></i></div>
+          <div class="btn-info"><div class="btn-label">Analisar Agora</div><div class="btn-desc">NEXUS lê o estado do restaurante</div></div>
+          <div class="btn-arrow c-teal">Groq AI</div>
+          <div class="tooltip"><strong>Analisar</strong>Envia o estado atual (mesas, pedidos, faturamento) ao NEXUS. Os 3 agentes (Analyst, Critic, Creative) respondem em segundos via Groq na nuvem.</div>
+        </div>
+        <div class="btn-node tooltip-wrap">
+          <div class="btn-icon c-purple"><i class="fas fa-comment-dots"></i></div>
+          <div class="btn-info"><div class="btn-label">Pergunte ao NEXUS</div><div class="btn-desc">Chat direto com a IA do restaurante</div></div>
+          <div class="btn-arrow c-purple">Chat IA</div>
+          <div class="tooltip"><strong>Chat NEXUS</strong>Digite qualquer pergunta: "Qual mesa devo priorizar?", "Tem gargalo na cozinha?". O NEXUS responde com análise real do Analyst, Critic ou Creative.</div>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:4px">
+          <div style="flex:1;background:var(--tealdim);border:1px solid rgba(6,182,212,.2);border-radius:8px;padding:8px;text-align:center;font-size:.68rem;color:var(--teal);font-weight:700">👁️ Analyst<br><span style="color:var(--muted);font-weight:400">Fatos & dados</span></div>
+          <div style="flex:1;background:var(--reddim);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:8px;text-align:center;font-size:.68rem;color:var(--red);font-weight:700">🛡️ Critic<br><span style="color:var(--muted);font-weight:400">Alertas & riscos</span></div>
+          <div style="flex:1;background:var(--purpledim);border:1px solid rgba(139,92,246,.2);border-radius:8px;padding:8px;text-align:center;font-size:.68rem;color:var(--purple);font-weight:700">💡 Creative<br><span style="color:var(--muted);font-weight:400">Ações & ideias</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 6. ATALHOS RÁPIDOS ══════════════════════════════════ -->
+  <div class="section-label"><i class="fas fa-bolt"></i> 6. Atalhos Rápidos & Dicas</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:48px">
+    <div style="background:var(--navy2);border:1px solid rgba(212,175,55,.15);border-radius:14px;padding:18px">
+      <div style="font-size:.7rem;font-weight:700;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px"><i class="fas fa-star" style="margin-right:5px"></i>Instalar no iPhone</div>
+      <div style="font-size:.78rem;color:var(--muted);line-height:1.6">Abra no Safari → toque no ícone de compartilhar → "Adicionar à Tela de Início"</div>
+    </div>
+    <div style="background:var(--navy2);border:1px solid rgba(6,182,212,.15);border-radius:14px;padding:18px">
+      <div style="font-size:.7rem;font-weight:700;color:var(--teal);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px"><i class="fas fa-android" style="margin-right:5px"></i>Instalar no Android</div>
+      <div style="font-size:.78rem;color:var(--muted);line-height:1.6">Abra no Chrome → aparece banner automático → toque "Instalar" ou "Adicionar à tela inicial"</div>
+    </div>
+    <div style="background:var(--navy2);border:1px solid rgba(239,68,68,.15);border-radius:14px;padding:18px">
+      <div style="font-size:.7rem;font-weight:700;color:var(--red);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px"><i class="fas fa-tv" style="margin-right:5px"></i>Tela da Cozinha</div>
+      <div style="font-size:.78rem;color:var(--muted);line-height:1.6">Login → Cozinha / Bar → sidebar desaparece → KDS full-screen atualiza a cada 20 segundos automaticamente</div>
+    </div>
+    <div style="background:var(--navy2);border:1px solid rgba(34,197,94,.15);border-radius:14px;padding:18px">
+      <div style="font-size:.7rem;font-weight:700;color:var(--green);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px"><i class="fas fa-wifi-slash" style="margin-right:5px"></i>Modo Offline</div>
+      <div style="font-size:.78rem;color:var(--muted);line-height:1.6">O app funciona sem internet! Pedidos ficam na fila e sincronizam quando a conexão voltar</div>
+    </div>
+    <div style="background:var(--navy2);border:1px solid rgba(139,92,246,.15);border-radius:14px;padding:18px">
+      <div style="font-size:.7rem;font-weight:700;color:var(--purple);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px"><i class="fas fa-qrcode" style="margin-right:5px"></i>QR Code na Mesa</div>
+      <div style="font-size:.78rem;color:var(--muted);line-height:1.6">Coloque um QR code em cada mesa apontando para landing.html — cliente abre direto no cardápio</div>
+    </div>
+    <div style="background:var(--navy2);border:1px solid rgba(245,158,11,.15);border-radius:14px;padding:18px">
+      <div style="font-size:.7rem;font-weight:700;color:var(--amber);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px"><i class="fas fa-shield-alt" style="margin-right:5px"></i>Segurança do Pedido</div>
+      <div style="font-size:.78rem;color:var(--muted);line-height:1.6">Nenhum pedido vai direto à cozinha — a Central sempre aprova primeiro, evitando erros</div>
+    </div>
+  </div>
+
+</div>
+
+<button class="print-btn" onclick="window.print()"><i class="fas fa-print"></i> Imprimir / Salvar PDF</button>
+
+<script>
+// Fade in on scroll
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting){ e.target.style.opacity='1'; e.target.style.transform='translateY(0)'; }
+  });
+}, {threshold:0.05});
+document.querySelectorAll('.screen,.role-card,.full-flow,.flow-step,.btn-node').forEach(el => {
+  el.style.opacity='0'; el.style.transform='translateY(20px)';
+  el.style.transition='opacity .5s ease, transform .5s ease';
+  obs.observe(el);
+});
+</script>
+</body>
+</html>

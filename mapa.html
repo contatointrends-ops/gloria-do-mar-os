@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glória do Mar OS + NEXUS iA — Mapa Mental</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #060e1a;
+    color: #e2e8f0;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── TOP BAR ── */
+  #topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(6,14,26,.92); backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(212,175,55,.2);
+    padding: 12px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  #topbar .logo { display:flex; align-items:center; gap:10px; }
+  #topbar .mark {
+    width:34px; height:34px; border-radius:8px;
+    background:linear-gradient(135deg,#06b6d4,#d4af37);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; color:#060e1a; font-size:.85rem;
+  }
+  #topbar h1 { font-size:.95rem; font-weight:700; color:white; }
+  #topbar p { font-size:.72rem; color:#06b6d4; font-weight: 600; }
+  .toolbar-btns { display:flex; gap:8px; }
+  .tb-btn {
+    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1);
+    color:#ccc; padding:6px 14px; border-radius:20px; font-size:.75rem;
+    cursor:pointer; transition:all .2s;
+  }
+  .tb-btn:hover { background:rgba(6,182,212,.15); border-color:rgba(6,182,212,.4); color:#06b6d4; }
+
+  /* ── LEGEND ── */
+  #legend {
+    position:fixed; bottom:20px; left:20px; z-index:100;
+    background:rgba(6,14,26,.9); border:1px solid rgba(255,255,255,.08);
+    border-radius:12px; padding:14px 18px;
+  }
+  #legend h4 { font-size:.68rem; color:#8899aa; text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
+  .legend-item { display:flex; align-items:center; gap:8px; margin-bottom:7px; font-size:.75rem; color:#ccc; }
+  .legend-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+
+  /* ── TOOLTIP ── */
+  #tooltip {
+    position:fixed; z-index:200; pointer-events:none;
+    background:rgba(6,14,26,.97); border:1px solid rgba(6,182,212,.4);
+    border-radius:10px; padding:12px 16px; max-width:260px;
+    font-size:.8rem; line-height:1.6; color:#e2e8f0;
+    box-shadow:0 20px 50px rgba(0,0,0,.6);
+    opacity:0; transition:opacity .2s;
+  }
+  #tooltip h4 { font-size:.85rem; color:#06b6d4; margin-bottom:6px; }
+
+  /* ── INFO PANEL ── */
+  #info-panel {
+    position:fixed; right:20px; top:70px; z-index:100;
+    background:rgba(6,14,26,.95); border:1px solid rgba(255,255,255,.1);
+    border-radius:14px; padding:20px; width:280px;
+    display:none; backdrop-filter:blur(16px);
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+  }
+  #info-panel h3 { font-size:1rem; color:white; margin-bottom:6px; }
+  #info-panel .ip-tag {
+    display:inline-block; padding:2px 10px; border-radius:20px;
+    font-size:.7rem; font-weight:700; margin-bottom:12px;
+  }
+  #info-panel p { font-size:.82rem; color:#8899aa; line-height:1.6; margin-bottom:12px; }
+  #info-panel ul { padding-left:16px; }
+  #info-panel ul li { font-size:.8rem; color:#cbd5e1; margin-bottom:5px; }
+  .ip-close {
+    position:absolute; top:12px; right:12px;
+    background:none; border:none; color:#8899aa;
+    cursor:pointer; font-size:1.1rem;
+  }
+  .ip-close:hover { color:white; }
+
+  /* ── CANVAS ── */
+  #canvas-wrap {
+    position:fixed; inset:0; top:56px;
+    overflow:hidden; cursor:grab;
+  }
+  #canvas-wrap.grabbing { cursor:grabbing; }
+  svg { width:100%; height:100%; }
+
+  /* ── NODE STYLES ── */
+  .node-group { cursor:pointer; }
+  .node-bg {
+    transition: filter .2s, transform .2s;
+    transform-origin: center;
+    transform-box: fill-box;
+  }
+  .node-group:hover .node-bg { filter:brightness(1.3); }
+  .node-group.expanded .node-bg { filter:brightness(1.2); }
+  .node-text {
+    font-family:'Segoe UI',system-ui,sans-serif;
+    fill:white; font-weight:600; text-anchor:middle;
+    dominant-baseline:middle; pointer-events:none;
+  }
+  .node-text.small { font-size:11px; }
+  .node-text.medium { font-size:13px; }
+  .node-text.center { font-size:15px; font-weight:800; }
+  .node-icon { font-size:18px; text-anchor:middle; dominant-baseline:middle; pointer-events:none; }
+
+  .edge {
+    fill:none; stroke-width:1.5;
+    transition:opacity .3s; opacity:.6;
+  }
+  .edge.child { stroke-dasharray:4,4; stroke-width:1; opacity:.4; }
+
+  /* pulse ring on center */
+  .pulse-ring {
+    fill:none; stroke:rgba(6,182,212,.4); stroke-width:2;
+    animation:pulse-ring 3s ease-in-out infinite;
+  }
+  @keyframes pulse-ring {
+    0%,100%{r:52; opacity:.5} 50%{r:62; opacity:0}
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="logo">
+    <div class="mark">GM</div>
+    <div>
+      <h1>Glória do Mar OS</h1>
+      <p>Powered by NEXUS iA · Mapa Mental do Sistema</p>
+    </div>
+  </div>
+  <div class="toolbar-btns">
+    <a href="app.html" class="tb-btn" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;background:rgba(6,182,212,.18);border-color:rgba(6,182,212,.6);color:#06b6d4;font-weight:700">⚡ Abrir Sistema</a>
+    <button class="tb-btn" onclick="resetView()">⌂ Centralizar</button>
+    <button class="tb-btn" onclick="expandAll()">+ Expandir tudo</button>
+    <button class="tb-btn" onclick="collapseAll()">− Recolher tudo</button>
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div id="legend">
+  <h4>Legenda</h4>
+  <div class="legend-item"><div class="legend-dot" style="background:#06b6d4; box-shadow: 0 0 8px #06b6d4;"></div>NEXUS iA Core</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#d4af37"></div>Sistema Central</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#38bdf8"></div>App Cliente</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Operações Internas</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Gestão / Backoffice</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>Arquitetura Técnica</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fb7185"></div>Roadmap</div>
+</div>
+
+<!-- TOOLTIP -->
+<div id="tooltip"><h4 id="tip-title"></h4><span id="tip-body"></span></div>
+
+<!-- INFO PANEL -->
+<div id="info-panel">
+  <button class="ip-close" onclick="closePanel()">✕</button>
+  <h3 id="ip-title"></h3>
+  <span class="ip-tag" id="ip-tag"></span>
+  <p id="ip-desc"></p>
+  <ul id="ip-items"></ul>
+</div>
+
+<!-- CANVAS -->
+<div id="canvas-wrap">
+  <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════
+const TREE = {
+  id:'root', label:'Glória do Mar OS', icon:'🌊', type:'root', color:'#00f0ff',
+  desc:'Plataforma operacional completa orquestrada pelo NEXUS iA.',
+  items:['Multi-tenant SaaS','NEXUS Cognitivo','Dual UX (Cliente + Ops)','Event-Driven Architecture'],
+  children:[
+    {
+      id:'cliente', label:'App do Cliente', icon:'📱', color:'#39ff14', angle:270,
+      desc:'Interface mobile-first para o banhista realizar reservas, pedidos e acompanhar a conta.',
+      tag:'UX Cliente', tagColor:'#39ff14',
+      items:['Acesso via QR ou link','Sem app nativo','Reserva dinâmica guiada pelo Nexus'],
+      children:[
+        {id:'home',    label:'Home / Vitrine', icon:'🏠', color:'#39ff14',
+          desc:'Vitrine fluida. O Nexus adapta as promoções em tempo real de acordo com as vendas.',
+          tag:'Descoberta', tagColor:'#39ff14',
+          items:['Cards Dinâmicos (Sugeridos via IA)','CTA de Reserva','Banners inteligentes']},
+        {id:'reserva', label:'Reserva Premium', icon:'🏖️', color:'#39ff14',
+          desc:'Alocação de mesas inteligente liderada por algoritmos de densidade populacional na praia.',
+          tag:'Conversão', tagColor:'#39ff14',
+          items:['Alocação por mapa','Check-in ágil','Prioridade garantida com sinal']},
+        {id:'mesa',    label:'Mesa Viva', icon:'🪑', color:'#39ff14',
+          desc:'Autoatendimento onde o Nexus prevê a próxima bebida ideal e sugere silenciosamente na tela.',
+          tag:'Retenção', tagColor:'#39ff14',
+          items:['Cardápio digital','Upsell automatizado pela IA','Split da conta rápido']},
+      ]
+    },
+    {
+      id:'ops', label:'Operações Internas', icon:'⚙️', color:'#fffb00', angle:330,
+      desc:'O Nexus roteia pedidos pela prioridade operacional, guiando o Staff sem sobrecarga mental.',
+      tag:'Staff', tagColor:'#fffb00',
+      items:['Triagem assistida','KDS Preditivo','Controle de garçons guiado'],
+      children:[
+        {id:'caixa',    label:'Central do Caixa', icon:'🧾', color:'#fffb00',
+          desc:'NEXUS aprova 90% dos pedidos automaticamente com triagem de risco, sobrando as exceções pro humano.',
+          tag:'Triagem Ativa', tagColor:'#fffb00',
+          items:['Aprovação IA 90%','Sinalização de riscos','Fila de exceções']},
+        {id:'kds',      label:'KDS Produção', icon:'🔥', color:'#fffb00',
+          desc:'A IA recalcula o timer dos tickets com base no gargalo do momento em cozinha/bar.',
+          tag:'Produção IA', tagColor:'#fffb00',
+          items:['Roteamento de demanda','Escalonamento dinâmico','Alertas preditivos']},
+        {id:'garcons',  label:'Garçons & Salão', icon:'🤵', color:'#fffb00',
+          desc:'Notificações do Nexus indicam para qual mesa o garçom deve ir antes mesmo de chamarem.',
+          tag:'Salão', tagColor:'#fffb00',
+          items:['Previsibilidade tática','Mapas de calor de ocupação','Rotas curtas']},
+      ]
+    },
+    {
+      id:'gestao', label:'Gestão / Backoffice', icon:'📊', color:'#ff6600', angle:30,
+      desc:'O dono do negócio conversa com os dados. O Nexus não entrega tabelas, ele entrega planos de ação.',
+      tag:'Owner', tagColor:'#ff6600',
+      items:['Dashboard ativo','Auditoria cognitiva','Automação financeira'],
+      children:[
+        {id:'dash',     label:'Dashboard Exec.', icon:'📈', color:'#ff6600',
+          desc:'Evolução de KPIs onde o Nexus sinaliza anomalias no faturamento instantaneamente.',
+          tag:'Business Active', tagColor:'#ff6600',
+          items:['Faturamento vivo','Anomalias marcadas','Forecast do dia']},
+        {id:'ia',       label:'Relatório NEXUS', icon:'🧠', color:'#ff6600',
+          desc:'Em vez de ler tabelas, o gestor lê as conclusões que o Critic e o Analyst processaram. O que fazer HOJE.',
+          tag:'Business Intel', tagColor:'#ff6600',
+          items:['Briefing Diário','Estratégia recomendada','Priorização cirúrgica']},
+        {id:'audit',    label:'Log Cognitivo', icon:'🔍', color:'#ff6600',
+          desc:'O Nexus rastreia até transações canceladas buscando padrões de fraude para o owner.',
+          tag:'Compliance IA', tagColor:'#ff6600',
+          items:['Gravação imutável','Bloqueio suspeito automatizado','Histórico protegido']}
+      ]
+    },
+    {
+      id:'nexus', label:'NEXUS iA (Core)', icon:'🤖', color:'#0088ff', angle:90,
+      desc:'Orquestrador ATIVO. Não bloqueia por falta de contexto. Sempre produz uma decisão. Nunca para.',
+      tag:'Inteligência Mestra', tagColor:'#0088ff',
+      items:['Decisões Autônomas','Tratamento de Incerteza','Memória Longo Prazo','Múltiplos Agentes Livres'],
+      children:[
+        {id:'vigilia', label:'Modo de Vigília', icon:'⚡', color:'#0088ff',
+          desc:'Atua no pico da operação: assume inputs, não depende do gestor para tomar microrrumos (ex: frear pedidos).',
+          tag:'Execução em RT', tagColor:'#0088ff',
+          items:['Freio de contenção por lotação','Distribuição de tráfego de garçons']},
+        {id:'sonho', label:'Fase de Sonho', icon:'🌙', color:'#0088ff',
+          desc:'Fora de pico, o Nexus sonha. Resume centenas de horas de operação em regras permanentes.',
+          tag:'Machine Learning', tagColor:'#0088ff',
+          items:['Consolidação de memória episódica','Novas regras enraizadas (Beliefs)']},
+        {id:'comite', label:'Comitê de Agentes', icon:'⚖️', color:'#0088ff',
+          desc:'Concorrência estruturada: O Creativo pensa na promoção, o Analyst precifica e o Critic barra loucuras.',
+          tag:'Orquestração Ativa', tagColor:'#0088ff',
+          items:['Creative (Pitch)','Analyst (Lógica)','Critic (Segurança)']}
+      ]
+    },
+    {
+      id:'arch', label:'Arquitetura', icon:'🏗️', color:'#b026ff', angle:150,
+      desc:'A base de dados que suporta um IA orquestrador (Eventos Assíncronos, Bancos Vetoriais).',
+      tag:'Técnico', tagColor:'#b026ff',
+      items:['Clean Architecture','Event-Driven','Vector Database (pgvector)','Graph Flows'],
+      children:[
+        {id:'multitenant',label:'Multi-Tenant Isolado', icon:'🏢', color:'#b026ff',
+          desc:'Cada restaurante tem seu próprio universo semiótico de memórias.',
+          tag:'SaaS Core', tagColor:'#b026ff',
+          items:['Dados granulares','Memória segmentada']},
+        {id:'offline',    label:'Offline-First', icon:'📡', color:'#b026ff',
+          desc:'O Nexus não sofre de amnésia se a rede cair. Sincroniza e decide depois.',
+          tag:'Resiliência', tagColor:'#b026ff',
+          items:['SQLite Local Cache','Async Sync engine']},
+        {id:'eventbus',   label:'Event Bus', icon:'⚡', color:'#b026ff',
+          desc:'Todos os inputs não são HTTP parados, mas eventos num sistema reativo.',
+          tag:'Arquitetura Reativa', tagColor:'#b026ff',
+          items:['Publish/Subscribe','Foco de venda massiva']},
+      ]
+    },
+    {
+      id:'roadmap', label:'Roadmap Evolutivo', icon:'🚀', color:'#ff003c', angle:210,
+      desc:'A integração do Nexus é progressiva: do MVP essencial ao Business Cognitive Terminal.',
+      tag:'Produto', tagColor:'#ff003c',
+      items:['F1: Fundação (Atual)','F2: Escalada Operacional','F3: Full Nexus Integration'],
+      children:[
+        {id:'mvp',     label:'MVP + Trivial', icon:'✅', color:'#ff003c',
+          desc:'Sistema básico sem uso de LLM intensivo (pedidos clássicos).',
+          tag:'Crítico Existencial', tagColor:'#ff003c',
+          items:['Reservas core','Pagamento Rápido','Caixa Manual']},
+        {id:'premium', label:'Nexus Ativado', icon:'💎', color:'#ff003c',
+          desc:'Automação IA e Predição de Gargalos tomando a linha de frente.',
+          tag:'Grande Diferencial', tagColor:'#ff003c',
+          items:['Motor Preditivo Llama 3','Automação Operacional','Dashboard Ativo']},
+      ]
+    }
+  ]
+};
+
+// ══════════════════════════════════════════════
+//  LAYOUT ENGINE E SVG (IGUAL O ORIGINAL)
+// ══════════════════════════════════════════════
+const W = () => window.innerWidth;
+const H = () => window.innerHeight - 56;
+const cx = () => W()/2;
+const cy = () => H()/2;
+
+const R_ROOT   = 58;
+const R_BRANCH = 42;
+const R_LEAF   = 34;
+const D_BRANCH = 220;
+const D_LEAF   = 160;
+
+let transform = { x:0, y:0, scale:1 };
+let dragging = false, dragStart = {x:0,y:0}, transformStart = {x:0,y:0};
+const expandedNodes = new Set(['root', 'nexus']); // Deixamos o branch do Nexus aberto por padrão 🔥
+
+function getNodePos(node, parentX=0, parentY=0) {
+  if(node.id==='root') return { x: cx(), y: cy() };
+  const rad = (node.angle * Math.PI) / 180;
+  return {
+    x: cx() + Math.cos(rad) * D_BRANCH,
+    y: cy() + Math.sin(rad) * D_BRANCH
+  };
+}
+
+function getLeafPos(leaf, branch) {
+  const branchRad = (branch.angle * Math.PI) / 180;
+  const branchX = cx() + Math.cos(branchRad) * D_BRANCH;
+  const branchY = cy() + Math.sin(branchRad) * D_BRANCH;
+
+  const n = branch.children.length;
+  const idx = branch.children.findIndex(c=>c.id===leaf.id);
+  const spread = Math.min(65, 170/n);
+  const offsetAngle = branch.angle + (idx - (n-1)/2) * spread;
+  const rad2 = (offsetAngle * Math.PI) / 180;
+
+  return {
+    x: branchX + Math.cos(rad2) * D_LEAF,
+    y: branchY + Math.sin(rad2) * D_LEAF
+  };
+}
+
+const NS='http://www.w3.org/2000/svg';
+function el(tag,attrs,par){
+  const e=document.createElementNS(NS,tag);
+  for(const [k,v] of Object.entries(attrs||{})) e.setAttribute(k,v);
+  if(par) par.appendChild(e);
+  return e;
+}
+
+function hexToRgba(hex, a=1){
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function curvePath(x1,y1,x2,y2){
+  const mx=(x1+x2)/2, my=(y1+y2)/2;
+  const dx=x2-x1, dy=y2-y1;
+  const cx1=mx-dy*.2, cy1=my+dx*.2;
+  return `M${x1},${y1} Q${cx1},${cy1} ${x2},${y2}`;
+}
+
+function render(){
+  const svg=document.getElementById('svg');
+  svg.innerHTML='';
+  const defs=el('defs',{},svg);
+  const filt=el('filter',{id:'shadow','x':'-20%','y':'-20%','width':'140%','height':'140%'},defs);
+  const fe=el('feDropShadow',{'dx':'0','dy':'4','stdDeviation':'8','flood-color':'rgba(0,0,0,.6)'},filt);
+  ['#38bdf8','#f59e0b','#22c55e','#a78bfa','#fb7185','#d4af37','#06b6d4','#ef4444'].forEach((c,i)=>{
+    const f2=el('filter',{id:`glow${i}`,'x':'-30%','y':'-30%','width':'160%','height':'160%'},defs);
+    el('feGaussianBlur',{'stdDeviation':'6','result':'blur'},f2);
+    const m=el('feMerge',{},f2);
+    el('feMergeNode',{'in':'blur'},m);
+    el('feMergeNode',{'in':'SourceGraphic'},m);
+  });
+
+  const g=el('g',{id:'g-main',transform:`translate(${transform.x},${transform.y}) scale(${transform.scale})`},svg);
+  const rootX=cx(), rootY=cy();
+
+  if(expandedNodes.has('root')){
+    TREE.children.forEach(branch=>{
+      const bx=cx()+Math.cos(branch.angle*Math.PI/180)*D_BRANCH;
+      const by=cy()+Math.sin(branch.angle*Math.PI/180)*D_BRANCH;
+      el('path',{'d':curvePath(rootX,rootY,bx,by),'class':'edge','stroke':branch.color},g);
+      if(expandedNodes.has(branch.id)){
+        branch.children.forEach(leaf=>{
+          const lp=getLeafPos(leaf,branch);
+          el('path',{'d':curvePath(bx,by,lp.x,lp.y),'class':'edge child','stroke':leaf.color||branch.color},g);
+        });
+      }
+    });
+
+    TREE.children.forEach(branch=>{
+      if(!expandedNodes.has(branch.id)) return;
+      branch.children.forEach(leaf=>{
+        const lp=getLeafPos(leaf,branch);
+        drawNode(g, leaf, lp.x, lp.y, R_LEAF, 'small', leaf.color || branch.color, false);
+      });
+    });
+
+    TREE.children.forEach(branch=>{
+      const bx=cx()+Math.cos(branch.angle*Math.PI/180)*D_BRANCH;
+      const by=cy()+Math.sin(branch.angle*Math.PI/180)*D_BRANCH;
+      drawNode(g, branch, bx, by, R_BRANCH, 'medium', branch.color, true);
+    });
+  }
+
+  el('circle',{'class':'pulse-ring','cx':rootX,'cy':rootY,'r':60,'stroke':'#00f0ff'},g);
+  drawNode(g, TREE, rootX, rootY, R_ROOT, 'center', '#00f0ff', true);
+}
+
+function drawNode(parent, node, x, y, r, textSize, color, hasBadge){
+  const g=el('g',{'class':'node-group','id':`ng-${node.id}`,'data-id':node.id,'transform':`translate(${x},${y})`},parent);
+  if(expandedNodes.has(node.id)) g.classList.add('expanded');
+  
+  if (node.id === 'nexus') {
+     el('circle',{'r':r+12,'fill':hexToRgba(color,.15),'stroke':'none', 'filter':'url(#shadow)'},g);
+  } else {
+     el('circle',{'r':r+8,'fill':hexToRgba(color,.08),'stroke':'none'},g);
+  }
+
+  const circ=el('circle',{'r':r,'fill':hexToRgba(color,.18),'stroke':color,'stroke-width':node.id === 'nexus'?'3.5':'2.5','class':'node-bg','filter':'url(#shadow)'},g);
+  const iconEl=el('text',{'x':0,'y':textSize==='small'?-10:-12,'class':'node-icon'},g);
+  iconEl.textContent=node.icon;
+
+  const words=node.label.split(' ');
+  if(words.length<=2 || textSize==='small'){
+    el('text',{'x':0,'y':textSize==='small'?8:14,'class':`node-text ${textSize}`,'fill':color},g).textContent=node.label;
+  } else {
+    el('text',{'x':0,'y':10,'class':`node-text ${textSize}`,'fill':color},g).textContent=words.slice(0,2).join(' ');
+    el('text',{'x':0,'y':24,'class':`node-text ${textSize}`,'fill':color},g).textContent=words.slice(2).join(' ');
+  }
+
+  if(node.children && hasBadge){
+    const badgeG=el('g',{'transform':`translate(${r-4},${-r+4})`},g);
+    el('circle',{'r':9,'fill':color,'stroke':'#060e1a','stroke-width':'1.5'},badgeG);
+    el('text',{'x':0,'y':0,'text-anchor':'middle','dominant-baseline':'middle','fill':'#060e1a','font-size':'10','font-weight':'800','font-family':'sans-serif'},badgeG)
+      .textContent=expandedNodes.has(node.id)?'−':'+';
+  }
+
+  g.addEventListener('click', e=>{ e.stopPropagation(); handleNodeClick(node); });
+  g.addEventListener('mouseenter', e=>showTooltip(e, node));
+  g.addEventListener('mouseleave', hideTooltip);
+}
+
+function handleNodeClick(node){
+  if(node.children){
+    if(expandedNodes.has(node.id)) expandedNodes.delete(node.id);
+    else expandedNodes.add(node.id);
+    render();
+  }
+  openPanel(node);
+}
+
+function showTooltip(e, node){
+  const tip=document.getElementById('tooltip');
+  document.getElementById('tip-title').textContent=node.icon+' '+node.label;
+  document.getElementById('tip-body').textContent=node.desc||'';
+  tip.style.opacity='1';
+  moveTip(e);
+}
+function moveTip(e){
+  const tip=document.getElementById('tooltip');
+  let x=e.clientX+14, y=e.clientY-40;
+  if(x+270>window.innerWidth) x=e.clientX-280;
+  tip.style.left=x+'px'; tip.style.top=y+'px';
+}
+function hideTooltip(){ document.getElementById('tooltip').style.opacity='0'; }
+
+document.getElementById('canvas-wrap').addEventListener('mousemove', e=>{
+  if(dragging){
+    transform.x=transformStart.x+(e.clientX-dragStart.x);
+    transform.y=transformStart.y+(e.clientY-dragStart.y);
+    document.getElementById('g-main').setAttribute('transform',`translate(${transform.x},${transform.y}) scale(${transform.scale})`);
+  }
+  moveTip(e);
+});
+document.getElementById('canvas-wrap').addEventListener('mousedown', e=>{
+  if(e.target.closest('.node-group')) return;
+  dragging=true; dragStart={x:e.clientX,y:e.clientY}; transformStart={x:transform.x,y:transform.y};
+  document.getElementById('canvas-wrap').classList.add('grabbing');
+});
+document.addEventListener('mouseup',()=>{dragging=false; document.getElementById('canvas-wrap')?.classList.remove('grabbing');});
+
+document.getElementById('canvas-wrap').addEventListener('wheel', e=>{
+  e.preventDefault();
+  const factor=e.deltaY<0?1.1:.9;
+  const newScale=Math.min(2.5,Math.max(.35,transform.scale*factor));
+  const rect=document.getElementById('canvas-wrap').getBoundingClientRect();
+  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  transform.x=mx-(mx-transform.x)*newScale/transform.scale;
+  transform.y=my-(my-transform.y)*newScale/transform.scale;
+  transform.scale=newScale;
+  document.getElementById('g-main').setAttribute('transform',`translate(${transform.x},${transform.y}) scale(${transform.scale})`);
+},{passive:false});
+
+let lastTouch=null;
+document.getElementById('canvas-wrap').addEventListener('touchstart',e=>{
+  if(e.touches.length===1){
+    dragging=true; dragStart={x:e.touches[0].clientX,y:e.touches[0].clientY}; transformStart={x:transform.x,y:transform.y};
+  }
+},{passive:true});
+document.getElementById('canvas-wrap').addEventListener('touchmove',e=>{
+  if(dragging&&e.touches.length===1){
+    transform.x=transformStart.x+(e.touches[0].clientX-dragStart.x);
+    transform.y=transformStart.y+(e.touches[0].clientY-dragStart.y);
+    document.getElementById('g-main').setAttribute('transform',`translate(${transform.x},${transform.y}) scale(${transform.scale})`);
+  }
+},{passive:true});
+document.addEventListener('touchend',()=>{dragging=false;});
+
+function openPanel(node){
+  const p=document.getElementById('info-panel');
+  document.getElementById('ip-title').textContent=node.icon+' '+node.label;
+  const tag=document.getElementById('ip-tag');
+  tag.textContent=node.tag||'Módulo';
+  tag.style.background=hexToRgba(node.color||'#d4af37',.15);
+  tag.style.color=node.color||'#d4af37';
+  document.getElementById('ip-desc').textContent=node.desc||'';
+  document.getElementById('ip-items').innerHTML=(node.items||[]).map(i=>`<li>${i}</li>`).join('');
+  p.style.display='block';
+}
+function closePanel(){ document.getElementById('info-panel').style.display='none'; }
+function resetView(){ transform={x:0,y:0,scale:1}; render(); }
+function expandAll(){ function walk(n){ expandedNodes.add(n.id); (n.children||[]).forEach(walk); } walk(TREE); render(); }
+function collapseAll(){ expandedNodes.clear(); render(); }
+document.getElementById('svg').addEventListener('click', e=>{ if(!e.target.closest('.node-group')) closePanel(); });
+window.addEventListener('resize', render);
+
+expandAll();
+render();
+setTimeout(()=>openPanel(TREE.children.find(c=>c.id==='nexus')), 400); // Mostra o Nexus logo de cara!
+</script>
+</body>
+</html>

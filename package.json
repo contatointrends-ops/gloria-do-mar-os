@@ -1,0 +1,11 @@
+{
+  "name": "gloria-do-mar-os",
+  "version": "1.0.0",
+  "description": "Glória do Mar OS — Beach Club Intelligence Platform powered by NEXUS iA",
+  "scripts": {
+    "start": "npx serve . -p ${PORT:-3000}"
+  },
+  "dependencies": {
+    "serve": "^14.2.3"
+  }
+}

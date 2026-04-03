@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glória do Mar OS — Mapa Mental</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #060e1a;
+    color: #e2e8f0;
+    height: 100vh;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── TOP BAR ── */
+  #topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(6,14,26,.92); backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(212,175,55,.2);
+    padding: 12px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  #topbar .logo { display:flex; align-items:center; gap:10px; }
+  #topbar .mark {
+    width:34px; height:34px; border-radius:8px;
+    background:linear-gradient(135deg,#d4af37,#f0d060);
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; color:#060e1a; font-size:.85rem;
+  }
+  #topbar h1 { font-size:.95rem; font-weight:700; color:white; }
+  #topbar p { font-size:.72rem; color:#8899aa; }
+  .toolbar-btns { display:flex; gap:8px; }
+  .tb-btn {
+    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1);
+    color:#ccc; padding:6px 14px; border-radius:20px; font-size:.75rem;
+    cursor:pointer; transition:all .2s;
+  }
+  .tb-btn:hover { background:rgba(212,175,55,.15); border-color:rgba(212,175,55,.4); color:#d4af37; }
+
+  /* ── LEGEND ── */
+  #legend {
+    position:fixed; bottom:20px; left:20px; z-index:100;
+    background:rgba(6,14,26,.9); border:1px solid rgba(255,255,255,.08);
+    border-radius:12px; padding:14px 18px;
+  }
+  #legend h4 { font-size:.68rem; color:#8899aa; text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; }
+  .legend-item { display:flex; align-items:center; gap:8px; margin-bottom:7px; font-size:.75rem; color:#ccc; }
+  .legend-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+
+  /* ── TOOLTIP ── */
+  #tooltip {
+    position:fixed; z-index:200; pointer-events:none;
+    background:rgba(6,14,26,.97); border:1px solid rgba(212,175,55,.3);
+    border-radius:10px; padding:12px 16px; max-width:260px;
+    font-size:.8rem; line-height:1.6; color:#e2e8f0;
+    box-shadow:0 20px 50px rgba(0,0,0,.6);
+    opacity:0; transition:opacity .2s;
+  }
+  #tooltip h4 { font-size:.85rem; color:#d4af37; margin-bottom:6px; }
+
+  /* ── INFO PANEL ── */
+  #info-panel {
+    position:fixed; right:20px; top:70px; z-index:100;
+    background:rgba(6,14,26,.95); border:1px solid rgba(255,255,255,.1);
+    border-radius:14px; padding:20px; width:280px;
+    display:none; backdrop-filter:blur(16px);
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+  }
+  #info-panel h3 { font-size:1rem; color:white; margin-bottom:6px; }
+  #info-panel .ip-tag {
+    display:inline-block; padding:2px 10px; border-radius:20px;
+    font-size:.7rem; font-weight:700; margin-bottom:12px;
+  }
+  #info-panel p { font-size:.82rem; color:#8899aa; line-height:1.6; margin-bottom:12px; }
+  #info-panel ul { padding-left:16px; }
+  #info-panel ul li { font-size:.8rem; color:#cbd5e1; margin-bottom:5px; }
+  .ip-close {
+    position:absolute; top:12px; right:12px;
+    background:none; border:none; color:#8899aa;
+    cursor:pointer; font-size:1.1rem;
+  }
+  .ip-close:hover { color:white; }
+
+  /* ── CANVAS ── */
+  #canvas-wrap {
+    position:fixed; inset:0; top:56px;
+    overflow:hidden; cursor:grab;
+  }
+  #canvas-wrap.grabbing { cursor:grabbing; }
+  svg { width:100%; height:100%; }
+
+  /* ── NODE STYLES ── */
+  .node-group { cursor:pointer; }
+  .node-bg {
+    transition: filter .2s, transform .2s;
+    transform-origin: center;
+    transform-box: fill-box;
+  }
+  .node-group:hover .node-bg { filter:brightness(1.3); }
+  .node-group.expanded .node-bg { filter:brightness(1.2); }
+  .node-text {
+    font-family:'Segoe UI',system-ui,sans-serif;
+    fill:white; font-weight:600; text-anchor:middle;
+    dominant-baseline:middle; pointer-events:none;
+  }
+  .node-text.small { font-size:11px; }
+  .node-text.medium { font-size:13px; }
+  .node-text.center { font-size:15px; font-weight:800; }
+  .node-icon { font-size:18px; text-anchor:middle; dominant-baseline:middle; pointer-events:none; }
+
+  .edge {
+    fill:none; stroke-width:1.5;
+    transition:opacity .3s; opacity:.6;
+  }
+  .edge.child { stroke-dasharray:4,4; stroke-width:1; opacity:.4; }
+
+  /* pulse ring on center */
+  .pulse-ring {
+    fill:none; stroke:rgba(212,175,55,.3); stroke-width:2;
+    animation:pulse-ring 3s ease-in-out infinite;
+  }
+  @keyframes pulse-ring {
+    0%,100%{r:52; opacity:.5} 50%{r:62; opacity:0}
+  }
+
+  /* ── NEXUS IA SPECIAL STYLES ── */
+  .nexus-glow-ring {
+    fill:none; stroke-width:2.5;
+    animation:nexus-pulse 2s ease-in-out infinite;
+  }
+  .nexus-glow-ring-2 {
+    fill:none; stroke-width:1.5;
+    animation:nexus-pulse 2s ease-in-out infinite .6s;
+  }
+  @keyframes nexus-pulse {
+    0%,100%{opacity:.7; r:56;} 50%{opacity:0; r:72;}
+  }
+  .nexus-star {
+    animation:nexus-star-spin 12s linear infinite;
+    transform-origin:center; transform-box:fill-box;
+  }
+  @keyframes nexus-star-spin {
+    from{transform:rotate(0deg)} to{transform:rotate(360deg)}
+  }
+  .nexus-badge-glow {
+    animation:nexus-badge 1.5s ease-in-out infinite alternate;
+  }
+  @keyframes nexus-badge {
+    from{filter:drop-shadow(0 0 6px #00e5ff)} to{filter:drop-shadow(0 0 18px #00e5ff)}
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="logo">
+    <div class="mark">GM</div>
+    <div>
+      <h1>Glória do Mar OS</h1>
+      <p>Mapa Mental do Sistema · Clique nos nós para explorar</p>
+    </div>
+  </div>
+  <div class="toolbar-btns">
+    <button class="tb-btn" onclick="resetView()">⌂ Centralizar</button>
+    <button class="tb-btn" onclick="expandAll()">+ Expandir tudo</button>
+    <button class="tb-btn" onclick="collapseAll()">− Recolher tudo</button>
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div id="legend">
+  <h4>Legenda</h4>
+  <div class="legend-item"><div class="legend-dot" style="background:#d4af37"></div>Sistema Central</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#38bdf8"></div>App Cliente</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>Operações Internas</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Gestão / Backoffice</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>Arquitetura Técnica</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fb7185"></div>Roadmap</div>
+  <div class="legend-item" style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08)">
+    <div class="legend-dot" style="background:#00e5ff;box-shadow:0 0 8px #00e5ff"></div>
+    <strong style="color:#00e5ff">✦ Nexus IA</strong> <span style="color:#8899aa;font-size:.68rem">(destaque)</span>
+  </div>
+</div>
+
+<!-- TOOLTIP -->
+<div id="tooltip"><h4 id="tip-title"></h4><span id="tip-body"></span></div>
+
+<!-- INFO PANEL -->
+<div id="info-panel">
+  <button class="ip-close" onclick="closePanel()">✕</button>
+  <h3 id="ip-title"></h3>
+  <span class="ip-tag" id="ip-tag"></span>
+  <p id="ip-desc"></p>
+  <ul id="ip-items"></ul>
+</div>
+
+<!-- CANVAS -->
+<div id="canvas-wrap">
+  <svg id="svg" xmlns="http://www.w3.org/2000/svg"></svg>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════
+const TREE = {
+  id:'root', label:'Glória do Mar OS', icon:'🌊', type:'root',
+  desc:'Plataforma operacional completa para beach clubs e quiosques de praia.',
+  items:['Multi-tenant SaaS','Offline-First','Dual UX (Cliente + Ops)','Event-Driven Architecture'],
+  children:[
+    {
+      id:'cliente', label:'App do Cliente', icon:'📱', color:'#38bdf8', angle:265,
+      desc:'Interface mobile-first para o banhista realizar reservas, pedidos e acompanhar a conta.',
+      tag:'UX Cliente', tagColor:'#38bdf8',
+      items:['Acesso via QR ou link','Sem necessidade de app nativo','Experience premium'],
+      children:[
+        {id:'home',    label:'Home / Vitrine', icon:'🏠', color:'#38bdf8',
+          desc:'Página inicial com ofertas do dia, promoções e destaques do cardápio.',
+          tag:'Descoberta', tagColor:'#38bdf8',
+          items:['Cards de ofertas do dia','CTA para reserva','Cardápio em destaque','Banners promocionais']},
+        {id:'reserva', label:'Reserva Premium', icon:'🏖️', color:'#38bdf8',
+          desc:'Wizard de 3 etapas: filtros → mapa de mesas interativo → pedido antecipado → confirmação.',
+          tag:'Conversão', tagColor:'#38bdf8',
+          items:['Mapa de mesas em tempo real','Bloqueio provisório de mesa','Pedido antecipado (upsell)','Confirmação instantânea']},
+        {id:'mesa',    label:'Mesa Viva', icon:'🪑', color:'#38bdf8',
+          desc:'Autoatendimento digital na mesa: pedir adicionais e acompanhar status sem chamar garçom.',
+          tag:'Retenção', tagColor:'#38bdf8',
+          items:['Login por código de mesa','Cardápio digital','Timeline de pedidos ao vivo','Pedir a conta']},
+      ]
+    },
+    {
+      id:'ops', label:'Operações Internas', icon:'⚙️', color:'#f59e0b', angle:210,
+      desc:'Ferramentas para equipe operacional gerenciar pedidos e produção em tempo real.',
+      tag:'Staff', tagColor:'#f59e0b',
+      items:['Triagem no caixa','Roteamento inteligente','KDS por setor','Controle de garçons'],
+      children:[
+        {id:'caixa',    label:'Central do Caixa', icon:'🧾', color:'#f59e0b',
+          desc:'Fila de triagem onde o operador aprova ou rejeita pedidos antes de ir para produção.',
+          tag:'Triagem', tagColor:'#f59e0b',
+          items:['Fila em tempo real','Detalhe do pedido','Aprovação p/ KDS','Rejeição com motivo']},
+        {id:'kds',      label:'KDS Produção', icon:'🔥', color:'#f59e0b',
+          desc:'Kitchen Display System separado por setor — Cozinha e Bar — com timer por ticket.',
+          tag:'Produção', tagColor:'#f59e0b',
+          items:['Colunas Cozinha / Bar','Timer por ticket','Status: Preparar → Pronto','Alertas de atraso']},
+        {id:'garcons',  label:'Garçons & Salão', icon:'🤵', color:'#f59e0b',
+          desc:'Painel de mesas do staff para acompanhar status do salão e entregas pendentes.',
+          tag:'Salão', tagColor:'#f59e0b',
+          items:['Mapa do salão','Status por mesa','Notificações de entrega','Histórico de pedidos']},
+      ]
+    },
+    {
+      id:'gestao', label:'Gestão / Backoffice', icon:'📊', color:'#22c55e', angle:54,
+      desc:'Visão executiva do negócio com KPIs financeiros, IA operacional e auditoria.',
+      tag:'Owner', tagColor:'#22c55e',
+      items:['KPIs em tempo real','Insights de IA','Log de auditoria','Configurações SaaS'],
+      children:[
+        {id:'dash',     label:'Dashboard Exec.', icon:'📈', color:'#22c55e',
+          desc:'Painel financeiro com faturamento MTD, ocupação, ticket médio e top produtos.',
+          tag:'Business', tagColor:'#22c55e',
+          items:['Faturamento em tempo real','Ocupação de mesas','Gráfico por hora','Top 5 produtos']},
+        {id:'ia',       label:'IA Copilot', icon:'🧠', color:'#22c55e',
+          desc:'Motor de análise que detecta gargalos, sugere alocação de staff e prioriza pedidos.',
+          tag:'Inteligência', tagColor:'#22c55e',
+          items:['Briefing executivo','Detecção de gargalos','Triagem prioritária','Recomendações automáticas']},
+        {id:'audit',    label:'Log de Auditoria', icon:'🔍', color:'#22c55e',
+          desc:'Trilha completa de eventos do sistema — pedidos, aprovações, pagamentos, logins.',
+          tag:'Compliance', tagColor:'#22c55e',
+          items:['Todos os eventos logados','Filtro por usuário/data','Exportação CSV','Rastreio de ações críticas']},
+        {id:'settings', label:'Configurações', icon:'⚙️', color:'#22c55e',
+          desc:'Ajuste do tenant: marca, cardápio, taxas, perfis de usuário e integrações.',
+          tag:'SaaS', tagColor:'#22c55e',
+          items:['Logo e cores do tenant','Cardápio e preços','Taxas e consumo mínimo','Gestão de equipe']},
+      ]
+    },
+    {
+      id:'arch', label:'Arquitetura', icon:'🏗️', color:'#a78bfa', angle:126,
+      desc:'Pilares técnicos que garantem escalabilidade, resiliência e manutenibilidade.',
+      tag:'Técnico', tagColor:'#a78bfa',
+      items:['Clean Architecture','Event-Driven','Offline-First','Multi-Tenant isolado'],
+      children:[
+        {id:'multitenant',label:'Multi-Tenant', icon:'🏢', color:'#a78bfa',
+          desc:'Isolamento completo de dados e identidade visual por estabelecimento.',
+          tag:'SaaS Core', tagColor:'#a78bfa',
+          items:['Dados isolados por tenant','Identidade visual própria','Seletor de tenant','Mar Azul + Praia Nobre']},
+        {id:'offline',    label:'Offline-First', icon:'📡', color:'#a78bfa',
+          desc:'Persistência local e fila de sincronização — restaurante não para se a internet cair.',
+          tag:'Resiliência', tagColor:'#a78bfa',
+          items:['LocalStorage Queue','Indicador de conectividade','Sync automático ao voltar','Retry inteligente']},
+        {id:'eventbus',   label:'Event Bus', icon:'⚡', color:'#a78bfa',
+          desc:'Sistema de eventos que desacopla módulos — pedido feito → dashboard atualiza automaticamente.',
+          tag:'Arquitetura', tagColor:'#a78bfa',
+          items:['Publish/Subscribe','Sem acoplamento direto','Dashboard reativo','Logs automáticos']},
+        {id:'rbac',       label:'Auth & RBAC', icon:'🔒', color:'#a78bfa',
+          desc:'Controle de acesso por perfil: Owner, Manager, Caixa, Cozinha, Garçom, Cliente.',
+          tag:'Segurança', tagColor:'#a78bfa',
+          items:['6 perfis de acesso','Views protegidas','Ações críticas bloqueadas','Auth mock → Firebase ready']},
+      ]
+    },
+    {
+      id:'roadmap', label:'Roadmap', icon:'🚀', color:'#fb7185', angle:198,
+      desc:'10 fases de implementação divididas entre MVP crítico e features Premium.',
+      tag:'Produto', tagColor:'#fb7185',
+      items:['MVP: Fases 1–5','Premium: Fases 6–10','Golden Master (Fase 10)','Multi-tenant desde Fase 1'],
+      children:[
+        {id:'mvp',     label:'MVP (Fases 1–5)', icon:'✅', color:'#fb7185',
+          desc:'Reserva & Check-in, Caixa, KDS, Pagamentos, Estoque básico e Autenticação.',
+          tag:'Crítico', tagColor:'#fb7185',
+          items:['F1: Fundação SaaS','F2: Booking Flow','F3: Caixa & KDS','F4: Mesa Viva','F5: Pagamentos']},
+        {id:'premium', label:'Premium (F6–10)', icon:'💎', color:'#fb7185',
+          desc:'Estoque avançado, Auth real, Offline resilience, IA Operacional e Launch.',
+          tag:'Diferencial', tagColor:'#fb7185',
+          items:['F6: Inventário & Stock','F7: Auth & RBAC real','F8: Offline-First','F9: IA & Dashboards','F10: Launch / Polish']},
+        {id:'integra', label:'Integrações', icon:'🔗', color:'#fb7185',
+          desc:'Conexões externas planejadas para expandir o ecossistema.',
+          tag:'Ecosistema', tagColor:'#fb7185',
+          items:['WhatsApp API','Pix Gateway','Firebase / Node backend','Tablets Android / iPad']},
+      ]
+    }
+  ]
+};
+
+// ══════════════════════════════════════════════
+//  LAYOUT ENGINE
+// ══════════════════════════════════════════════
+const W = () => window.innerWidth;
+const H = () => window.innerHeight - 56;
+const cx = () => W()/2;
+const cy = () => H()/2;
+
+const R_ROOT   = 52;
+const R_BRANCH = 40;
+const R_LEAF   = 32;
+const D_BRANCH = 200;
+const D_LEAF   = 150;
+
+let transform = { x:0, y:0, scale:1 };
+let dragging = false, dragStart = {x:0,y:0}, transformStart = {x:0,y:0};
+const expandedNodes = new Set(['root']);
+
+function getNodePos(node, parentX=0, parentY=0) {
+  if(node.id==='root') return { x: cx(), y: cy() };
+  const rad = (node.angle * Math.PI) / 180;
+  return {
+    x: cx() + Math.cos(rad) * D_BRANCH,
+    y: cy() + Math.sin(rad) * D_BRANCH
+  };
+}
+
+function getLeafPos(leaf, branch) {
+  const branchRad = (branch.angle * Math.PI) / 180;
+  const branchX = cx() + Math.cos(branchRad) * D_BRANCH;
+  const branchY = cy() + Math.sin(branchRad) * D_BRANCH;
+
+  const n = branch.children.length;
+  const idx = branch.children.findIndex(c=>c.id===leaf.id);
+  const spread = Math.min(60, 160/n);
+  const offsetAngle = branch.angle + (idx - (n-1)/2) * spread;
+  const rad2 = (offsetAngle * Math.PI) / 180;
+
+  return {
+    x: branchX + Math.cos(rad2) * D_LEAF,
+    y: branchY + Math.sin(rad2) * D_LEAF
+  };
+}
+
+// ══════════════════════════════════════════════
+//  SVG HELPERS
+// ══════════════════════════════════════════════
+const NS='http://www.w3.org/2000/svg';
+function el(tag,attrs,par){
+  const e=document.createElementNS(NS,tag);
+  for(const [k,v] of Object.entries(attrs||{})) e.setAttribute(k,v);
+  if(par) par.appendChild(e);
+  return e;
+}
+
+function hexToRgba(hex, a=1){
+  const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+// Curved path between two points
+function curvePath(x1,y1,x2,y2){
+  const mx=(x1+x2)/2, my=(y1+y2)/2;
+  const dx=x2-x1, dy=y2-y1;
+  const cx1=mx-dy*.2, cy1=my+dx*.2;
+  return `M${x1},${y1} Q${cx1},${cy1} ${x2},${y2}`;
+}
+
+// ══════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════
+function render(){
+  const svg=document.getElementById('svg');
+  svg.innerHTML='';
+
+  // Defs
+  const defs=el('defs',{},svg);
+  // Drop shadow
+  const filt=el('filter',{id:'shadow','x':'-20%','y':'-20%','width':'140%','height':'140%'},defs);
+  const fe=el('feDropShadow',{'dx':'0','dy':'4','stdDeviation':'8','flood-color':'rgba(0,0,0,.6)'},filt);
+  // Glow per color
+  ['#38bdf8','#f59e0b','#22c55e','#a78bfa','#fb7185','#d4af37'].forEach((c,i)=>{
+    const f2=el('filter',{id:`glow${i}`,'x':'-30%','y':'-30%','width':'160%','height':'160%'},defs);
+    el('feGaussianBlur',{'stdDeviation':'6','result':'blur'},f2);
+    const m=el('feMerge',{},f2);
+    el('feMergeNode',{'in':'blur'},m);
+    el('feMergeNode',{'in':'SourceGraphic'},m);
+  });
+
+  // Main group (pannable/zoomable)
+  const g=el('g',{id:'g-main',transform:`translate(${transform.x},${transform.y}) scale(${transform.scale})`},svg);
+
+  const rootX=cx(), rootY=cy();
+
+  // ── BRANCH EDGES ──
+  TREE.children.forEach(branch=>{
+    const bx=cx()+Math.cos(branch.angle*Math.PI/180)*D_BRANCH;
+    const by=cy()+Math.sin(branch.angle*Math.PI/180)*D_BRANCH;
+
+    // root → branch
+    const edg=el('path',{
+      'd':curvePath(rootX,rootY,bx,by),
+      'class':'edge','stroke':branch.color
+    },g);
+
+    if(expandedNodes.has(branch.id)){
+      // branch → leaves
+      branch.children.forEach(leaf=>{
+        const lp=getLeafPos(leaf,branch);
+        el('path',{
+          'd':curvePath(bx,by,lp.x,lp.y),
+          'class':'edge child','stroke':branch.color
+        },g);
+      });
+    }
+  });
+
+  // ── LEAF NODES ──
+  TREE.children.forEach(branch=>{
+    if(!expandedNodes.has(branch.id)) return;
+    branch.children.forEach(leaf=>{
+      const lp=getLeafPos(leaf,branch);
+      drawNode(g, leaf, lp.x, lp.y, R_LEAF, 'small', branch.color, false);
+    });
+  });
+
+  // ── BRANCH NODES ──
+  TREE.children.forEach(branch=>{
+    const bx=cx()+Math.cos(branch.angle*Math.PI/180)*D_BRANCH;
+    const by=cy()+Math.sin(branch.angle*Math.PI/180)*D_BRANCH;
+    drawNode(g, branch, bx, by, R_BRANCH, 'medium', branch.color, true);
+  });
+
+  // ── PULSE RING ──
+  el('circle',{'class':'pulse-ring','cx':rootX,'cy':rootY,'r':54},g);
+
+  // ── ROOT NODE ──
+  drawNode(g, TREE, rootX, rootY, R_ROOT, 'center', '#d4af37', false);
+}
+
+function drawNode(parent, node, x, y, r, textSize, color, hasBadge){
+  const g=el('g',{'class':'node-group','id':`ng-${node.id}`,
+    'data-id':node.id,'transform':`translate(${x},${y})`},parent);
+  if(expandedNodes.has(node.id)) g.classList.add('expanded');
+
+  // Outer glow circle
+  el('circle',{'r':r+8,'fill':hexToRgba(color,.08),'stroke':'none'},g);
+
+  // Main circle
+  const circ=el('circle',{
+    'r':r,'fill':hexToRgba(color,.18),
+    'stroke':color,'stroke-width':'2.5',
+    'class':'node-bg','filter':'url(#shadow)'
+  },g);
+
+  // Icon
+  const iconEl=el('text',{'x':0,'y':textSize==='small'?-10:-12,'class':'node-icon'},g);
+  iconEl.textContent=node.icon;
+
+  // Label (may need wrapping)
+  const words=node.label.split(' ');
+  if(words.length<=2 || textSize==='small'){
+    el('text',{'x':0,'y':textSize==='small'?8:14,'class':`node-text ${textSize}`,'fill':color},g)
+      .textContent=node.label;
+  } else {
+    const line1=words.slice(0,2).join(' ');
+    const line2=words.slice(2).join(' ');
+    el('text',{'x':0,'y':10,'class':`node-text ${textSize}`,'fill':color},g).textContent=line1;
+    el('text',{'x':0,'y':24,'class':`node-text ${textSize}`,'fill':color},g).textContent=line2;
+  }
+
+  // Expand badge
+  if(node.children && hasBadge){
+    const badgeG=el('g',{'transform':`translate(${r-4},${-r+4})`},g);
+    el('circle',{'r':9,'fill':color,'stroke':'#060e1a','stroke-width':'1.5'},badgeG);
+    el('text',{'x':0,'y':0,'text-anchor':'middle','dominant-baseline':'middle',
+      'fill':'#060e1a','font-size':'10','font-weight':'800','font-family':'sans-serif'},badgeG)
+      .textContent=expandedNodes.has(node.id)?'−':'+';
+  }
+
+  // Events
+  g.addEventListener('click', e=>{ e.stopPropagation(); handleNodeClick(node); });
+  g.addEventListener('mouseenter', e=>showTooltip(e, node));
+  g.addEventListener('mouseleave', hideTooltip);
+}
+
+// ══════════════════════════════════════════════
+//  INTERACTIONS
+// ══════════════════════════════════════════════
+function handleNodeClick(node){
+  if(node.children){
+    if(expandedNodes.has(node.id)) expandedNodes.delete(node.id);
+    else expandedNodes.add(node.id);
+    render();
+  }
+  openPanel(node);
+}
+
+function showTooltip(e, node){
+  const tip=document.getElementById('tooltip');
+  document.getElementById('tip-title').textContent=node.icon+' '+node.label;
+  document.getElementById('tip-body').textContent=node.desc||'';
+  tip.style.opacity='1';
+  moveTip(e);
+}
+
+function moveTip(e){
+  const tip=document.getElementById('tooltip');
+  let x=e.clientX+14, y=e.clientY-40;
+  if(x+270>window.innerWidth) x=e.clientX-280;
+  tip.style.left=x+'px'; tip.style.top=y+'px';
+}
+
+function hideTooltip(){ document.getElementById('tooltip').style.opacity='0'; }
+
+document.getElementById('canvas-wrap').addEventListener('mousemove', e=>{
+  if(dragging){
+    transform.x=transformStart.x+(e.clientX-dragStart.x);
+    transform.y=transformStart.y+(e.clientY-dragStart.y);
+    document.getElementById('g-main').setAttribute('transform',
+      `translate(${transform.x},${transform.y}) scale(${transform.scale})`);
+  }
+  moveTip(e);
+});
+
+document.getElementById('canvas-wrap').addEventListener('mousedown', e=>{
+  if(e.target.closest('.node-group')) return;
+  dragging=true;
+  dragStart={x:e.clientX,y:e.clientY};
+  transformStart={x:transform.x,y:transform.y};
+  document.getElementById('canvas-wrap').classList.add('grabbing');
+});
+
+document.addEventListener('mouseup',()=>{
+  dragging=false;
+  document.getElementById('canvas-wrap')?.classList.remove('grabbing');
+});
+
+document.getElementById('canvas-wrap').addEventListener('wheel', e=>{
+  e.preventDefault();
+  const factor=e.deltaY<0?1.1:.9;
+  const newScale=Math.min(2.5,Math.max(.35,transform.scale*factor));
+  // Zoom toward mouse
+  const rect=document.getElementById('canvas-wrap').getBoundingClientRect();
+  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  transform.x=mx-(mx-transform.x)*newScale/transform.scale;
+  transform.y=my-(my-transform.y)*newScale/transform.scale;
+  transform.scale=newScale;
+  document.getElementById('g-main').setAttribute('transform',
+    `translate(${transform.x},${transform.y}) scale(${transform.scale})`);
+},{passive:false});
+
+// Touch support
+let lastTouch=null;
+document.getElementById('canvas-wrap').addEventListener('touchstart',e=>{
+  if(e.touches.length===1){
+    dragging=true;
+    lastTouch={x:e.touches[0].clientX,y:e.touches[0].clientY};
+    transformStart={x:transform.x,y:transform.y};
+    dragStart={x:e.touches[0].clientX,y:e.touches[0].clientY};
+  }
+},{passive:true});
+document.getElementById('canvas-wrap').addEventListener('touchmove',e=>{
+  if(dragging&&e.touches.length===1){
+    transform.x=transformStart.x+(e.touches[0].clientX-dragStart.x);
+    transform.y=transformStart.y+(e.touches[0].clientY-dragStart.y);
+    document.getElementById('g-main').setAttribute('transform',
+      `translate(${transform.x},${transform.y}) scale(${transform.scale})`);
+  }
+},{passive:true});
+document.addEventListener('touchend',()=>{dragging=false;});
+
+// ── INFO PANEL ──────────────────────────────
+function openPanel(node){
+  const p=document.getElementById('info-panel');
+  document.getElementById('ip-title').textContent=node.icon+' '+node.label;
+  const tag=document.getElementById('ip-tag');
+  tag.textContent=node.tag||'Módulo';
+  tag.style.background=hexToRgba(node.color||'#d4af37',.15);
+  tag.style.color=node.color||'#d4af37';
+  document.getElementById('ip-desc').textContent=node.desc||'';
+  const ul=document.getElementById('ip-items');
+  ul.innerHTML=(node.items||[]).map(i=>`<li>${i}</li>`).join('');
+  p.style.display='block';
+}
+
+function closePanel(){ document.getElementById('info-panel').style.display='none'; }
+
+function resetView(){
+  transform={x:0,y:0,scale:1};
+  render();
+}
+function expandAll(){
+  function walk(n){ expandedNodes.add(n.id); (n.children||[]).forEach(walk); }
+  walk(TREE); render();
+}
+function collapseAll(){
+  expandedNodes.clear(); expandedNodes.add('root'); render();
+}
+
+// Click on empty space closes panel
+document.getElementById('svg').addEventListener('click', e=>{
+  if(!e.target.closest('.node-group')) closePanel();
+});
+
+window.addEventListener('resize', render);
+
+// ── BOOT ──────────────────────────────────────
+expandAll();
+render();
+
+// Auto-open root panel briefly
+setTimeout(()=>openPanel(TREE), 400);
+</script>
+</body>
+</html>

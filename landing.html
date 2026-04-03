@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Glória do Mar — Experiência Premium à Beira-Mar</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0a192f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Glória do Mar">
+  <link rel="apple-touch-icon" href="Logo.png">
+
+  <!-- SEO -->
+  <meta name="description" content="Glória do Mar — Gastronomia premium com os pés na areia em Angra dos Reis. Reserve sua cabana VIP, peça pelo app e viva a experiência completa.">
+  <meta property="og:title" content="Glória do Mar">
+  <meta property="og:description" content="Gastronomia premium à beira-mar em Angra dos Reis.">
+  <meta property="og:image" content="gloria_ai_vision_tabatinga_1774727274721.jpg">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    /* ── RESET & BASE ─────────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --navy:    #0a192f;
+      --navy2:   #0f2540;
+      --navy3:   #1e3a5f;
+      --gold:    #d4af37;
+      --gold2:   #f0d060;
+      --gold-dim: rgba(212,175,55,.12);
+      --teal:    #06b6d4;
+      --text:    #e2e8f0;
+      --muted:   #94a3b8;
+      --white:   #ffffff;
+      --serif:   'Playfair Display', Georgia, serif;
+      --sans:    'Outfit', sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--sans);
+      background: var(--navy);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+    a { text-decoration: none; color: inherit; }
+    img { max-width: 100%; display: block; }
+    button { font-family: var(--sans); cursor: pointer; border: none; }
+
+    /* ── NAV ──────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 32px;
+      transition: all .4s ease;
+    }
+    nav.scrolled {
+      background: rgba(10,25,47,.95);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(212,175,55,.15);
+      padding: 12px 32px;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .nav-logo img { width: 36px; height: 36px; border-radius: 8px; }
+    .nav-brand { font-family: var(--serif); font-size: 1.1rem; color: var(--gold); font-weight: 600; }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a { font-size: .88rem; color: var(--muted); font-weight: 500; transition: color .2s; }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-cta {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .btn-outline {
+      padding: 9px 22px; border-radius: 8px; font-size: .85rem; font-weight: 600;
+      border: 1.5px solid var(--gold); color: var(--gold); background: transparent;
+      transition: all .25s;
+    }
+    .btn-outline:hover { background: var(--gold); color: var(--navy); }
+    .btn-gold {
+      padding: 9px 22px; border-radius: 8px; font-size: .85rem; font-weight: 700;
+      background: var(--gold); color: var(--navy);
+      transition: all .25s; box-shadow: 0 4px 20px rgba(212,175,55,.35);
+    }
+    .btn-gold:hover { background: var(--gold2); box-shadow: 0 6px 30px rgba(212,175,55,.5); transform: translateY(-1px); }
+    .btn-install {
+      padding: 9px 22px; border-radius: 8px; font-size: .85rem; font-weight: 600;
+      background: rgba(6,182,212,.15); border: 1.5px solid var(--teal); color: var(--teal);
+      transition: all .25s; display: flex; align-items: center; gap: 7px;
+    }
+    .btn-install:hover { background: var(--teal); color: var(--navy); }
+
+    /* ── HERO ──────────────────────────────────────────── */
+    .hero {
+      position: relative; min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background: url('gloria_ai_vision_tabatinga_1774727274721.jpg') center/cover no-repeat;
+    }
+    .hero-bg::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(
+        to bottom,
+        rgba(10,25,47,.55) 0%,
+        rgba(10,25,47,.4) 40%,
+        rgba(10,25,47,.75) 80%,
+        rgba(10,25,47,1) 100%
+      );
+    }
+    .hero-content { position: relative; z-index: 1; padding: 120px 24px 60px; max-width: 800px; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(212,175,55,.12); border: 1px solid rgba(212,175,55,.35);
+      padding: 6px 18px; border-radius: 99px;
+      font-size: .75rem; font-weight: 700; color: var(--gold); letter-spacing: .1em;
+      text-transform: uppercase; margin-bottom: 28px;
+    }
+    .hero-badge span { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .hero-title {
+      font-family: var(--serif); font-size: clamp(3rem, 8vw, 6rem);
+      color: var(--white); line-height: 1.05; margin-bottom: 12px;
+      text-shadow: 0 4px 24px rgba(0,0,0,.4);
+    }
+    .hero-title em { color: var(--gold); font-style: italic; }
+    .hero-sub {
+      font-size: clamp(.95rem, 2.5vw, 1.15rem); color: rgba(226,232,240,.8);
+      margin-bottom: 10px; font-weight: 300; letter-spacing: .03em;
+    }
+    .hero-loc {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: .8rem; color: var(--gold); font-weight: 600; margin-bottom: 44px;
+      letter-spacing: .06em; text-transform: uppercase;
+    }
+    .hero-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .hero-actions .btn-hero-primary {
+      padding: 16px 38px; border-radius: 10px; font-size: 1rem; font-weight: 700;
+      background: var(--gold); color: var(--navy);
+      box-shadow: 0 8px 32px rgba(212,175,55,.45); transition: all .3s;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .hero-actions .btn-hero-primary:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(212,175,55,.6); }
+    .hero-actions .btn-hero-install {
+      padding: 16px 38px; border-radius: 10px; font-size: 1rem; font-weight: 600;
+      background: rgba(255,255,255,.08); border: 1.5px solid rgba(255,255,255,.25); color: var(--white);
+      backdrop-filter: blur(10px); transition: all .3s;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .hero-actions .btn-hero-install:hover { background: rgba(255,255,255,.18); transform: translateY(-3px); }
+    .hero-scroll {
+      position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+      z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;
+      color: rgba(255,255,255,.4); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase;
+      animation: fadeUp 2s ease infinite;
+    }
+    @keyframes fadeUp { 0%,100%{opacity:.4;transform:translateX(-50%) translateY(0)} 50%{opacity:.8;transform:translateX(-50%) translateY(-8px)} }
+
+    /* ── STATS BAR ─────────────────────────────────────── */
+    .stats-bar {
+      background: var(--navy2); border-top: 1px solid rgba(212,175,55,.12);
+      border-bottom: 1px solid rgba(212,175,55,.12);
+      display: flex; justify-content: center;
+      padding: 28px 32px; gap: 0;
+    }
+    .stat { flex: 1; max-width: 220px; text-align: center; padding: 0 24px; }
+    .stat + .stat { border-left: 1px solid rgba(255,255,255,.07); }
+    .stat-num { font-family: var(--serif); font-size: 2.2rem; color: var(--gold); font-weight: 700; line-height: 1; }
+    .stat-label { font-size: .75rem; color: var(--muted); margin-top: 6px; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; }
+
+    /* ── SECTIONS ─────────────────────────────────────── */
+    section { padding: 100px 24px; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: .7rem; font-weight: 700; color: var(--gold);
+      letter-spacing: .14em; text-transform: uppercase; margin-bottom: 18px;
+    }
+    .section-tag::before { content: ''; width: 24px; height: 1.5px; background: var(--gold); }
+    .section-title {
+      font-family: var(--serif); font-size: clamp(2rem, 4vw, 3rem);
+      color: var(--white); line-height: 1.15; margin-bottom: 18px;
+    }
+    .section-title em { color: var(--gold); font-style: italic; }
+    .section-sub { font-size: 1rem; color: var(--muted); line-height: 1.7; max-width: 560px; }
+
+    /* ── EXPERIENCE ───────────────────────────────────── */
+    .exp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 60px; }
+    @media(max-width:768px) { .exp-grid { grid-template-columns: 1fr; } }
+    .exp-card {
+      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
+      border-radius: 20px; overflow: hidden; transition: all .35s; position: relative;
+    }
+    .exp-card:hover { transform: translateY(-6px); border-color: rgba(212,175,55,.3); box-shadow: 0 24px 60px rgba(0,0,0,.4); }
+    .exp-img { width: 100%; height: 220px; object-fit: cover; }
+    .exp-body { padding: 28px 24px; }
+    .exp-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; margin-bottom: 16px; }
+    .exp-icon.gold { background: var(--gold-dim); color: var(--gold); }
+    .exp-icon.teal { background: rgba(6,182,212,.12); color: var(--teal); }
+    .exp-icon.white { background: rgba(255,255,255,.07); color: var(--white); }
+    .exp-card h3 { font-family: var(--serif); font-size: 1.25rem; color: var(--white); margin-bottom: 10px; }
+    .exp-card p { font-size: .88rem; color: var(--muted); line-height: 1.7; }
+    .exp-tag { margin-top: 18px; display: inline-flex; align-items: center; gap: 6px; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--gold); }
+
+    /* ── MENU PREVIEW ──────────────────────────────────── */
+    .menu-section { background: var(--navy2); }
+    .menu-scroll {
+      display: flex; gap: 20px; overflow-x: auto; padding: 40px 0 20px;
+      scrollbar-width: none; -ms-overflow-style: none;
+    }
+    .menu-scroll::-webkit-scrollbar { display: none; }
+    .menu-card {
+      flex-shrink: 0; width: 220px; border-radius: 16px; overflow: hidden;
+      background: var(--navy); border: 1px solid rgba(255,255,255,.07);
+      transition: all .3s; cursor: pointer;
+    }
+    .menu-card:hover { transform: translateY(-4px) scale(1.02); border-color: rgba(212,175,55,.3); }
+    .menu-card img { width: 100%; height: 160px; object-fit: cover; }
+    .menu-card-body { padding: 16px; }
+    .menu-card-name { font-weight: 700; font-size: .95rem; color: var(--white); margin-bottom: 4px; }
+    .menu-card-desc { font-size: .78rem; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
+    .menu-card-price { font-family: var(--serif); font-size: 1.15rem; color: var(--gold); font-weight: 600; }
+    .menu-cta { text-align: center; margin-top: 40px; }
+    .btn-outline-gold {
+      padding: 14px 36px; border-radius: 10px; font-size: .95rem; font-weight: 600;
+      border: 1.5px solid var(--gold); color: var(--gold); background: transparent;
+      transition: all .25s; display: inline-flex; align-items: center; gap: 10px;
+    }
+    .btn-outline-gold:hover { background: var(--gold); color: var(--navy); }
+
+    /* ── HOW IT WORKS ──────────────────────────────────── */
+    .how-section { background: var(--navy); }
+    .how-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 32px; margin-top: 60px; }
+    @media(max-width:768px) { .how-grid { grid-template-columns: 1fr; } }
+    .how-step { text-align: center; }
+    .how-num {
+      width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 24px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--serif); font-size: 1.6rem; font-weight: 700; color: var(--navy);
+      background: var(--gold); box-shadow: 0 8px 32px rgba(212,175,55,.35);
+    }
+    .how-step h3 { font-family: var(--serif); font-size: 1.2rem; color: var(--white); margin-bottom: 10px; }
+    .how-step p { font-size: .88rem; color: var(--muted); line-height: 1.7; max-width: 260px; margin: 0 auto; }
+    .how-connector {
+      display: flex; align-items: center; justify-content: center;
+      padding-top: 32px; color: rgba(212,175,55,.3); font-size: 1.5rem;
+    }
+    @media(max-width:768px) { .how-connector { display: none; } }
+
+    /* ── INSTALL CTA ───────────────────────────────────── */
+    .install-section {
+      background: linear-gradient(135deg, var(--navy2) 0%, #0d2040 100%);
+      border-top: 1px solid rgba(212,175,55,.12);
+      border-bottom: 1px solid rgba(212,175,55,.12);
+      text-align: center; padding: 100px 24px;
+    }
+    .install-mockup {
+      width: 200px; margin: 0 auto 48px;
+      background: var(--navy); border-radius: 32px; padding: 12px;
+      border: 2px solid rgba(212,175,55,.25);
+      box-shadow: 0 40px 80px rgba(0,0,0,.5), 0 0 0 8px rgba(212,175,55,.06);
+    }
+    .install-mockup img { border-radius: 22px; width: 100%; }
+    .install-badge {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: rgba(6,182,212,.1); border: 1px solid rgba(6,182,212,.3);
+      padding: 8px 20px; border-radius: 99px;
+      font-size: .78rem; font-weight: 700; color: var(--teal); letter-spacing: .06em;
+      text-transform: uppercase; margin-bottom: 24px;
+    }
+    .install-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 44px; }
+    .btn-install-big {
+      padding: 18px 44px; border-radius: 12px; font-size: 1.05rem; font-weight: 700;
+      background: var(--teal); color: var(--navy);
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 8px 32px rgba(6,182,212,.35); transition: all .3s;
+    }
+    .btn-install-big:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(6,182,212,.5); }
+    .btn-whatsapp {
+      padding: 18px 44px; border-radius: 12px; font-size: 1.05rem; font-weight: 700;
+      background: #25d366; color: white;
+      display: flex; align-items: center; gap: 12px; transition: all .3s;
+      box-shadow: 0 8px 32px rgba(37,211,102,.25);
+    }
+    .btn-whatsapp:hover { transform: translateY(-3px); background: #20ba5a; }
+
+    /* ── FOOTER ────────────────────────────────────────── */
+    footer {
+      background: #050d1a; padding: 60px 32px 32px;
+      border-top: 1px solid rgba(255,255,255,.05);
+    }
+    .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 48px; max-width: 1100px; margin: 0 auto 48px; }
+    @media(max-width:768px) { .footer-grid { grid-template-columns: 1fr; gap: 32px; } }
+    .footer-brand h2 { font-family: var(--serif); font-size: 1.5rem; color: var(--gold); margin-bottom: 8px; }
+    .footer-brand p { font-size: .85rem; color: var(--muted); line-height: 1.7; max-width: 300px; }
+    .footer-social { display: flex; gap: 12px; margin-top: 20px; }
+    .social-btn {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); font-size: .9rem; transition: all .2s;
+    }
+    .social-btn:hover { background: var(--gold-dim); color: var(--gold); border-color: rgba(212,175,55,.3); }
+    .footer-col h4 { font-size: .78rem; font-weight: 700; color: var(--white); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 18px; }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-col ul li a { font-size: .85rem; color: var(--muted); transition: color .2s; }
+    .footer-col ul li a:hover { color: var(--gold); }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,.05); padding-top: 28px; text-align: center; max-width: 1100px; margin: 0 auto; }
+    .footer-bottom p { font-size: .78rem; color: var(--muted); }
+    .footer-bottom span { color: var(--gold); }
+
+    /* ── PWA INSTALL BANNER ────────────────────────────── */
+    #pwa-banner {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: var(--navy2); border: 1px solid rgba(212,175,55,.3);
+      border-radius: 16px; padding: 16px 24px;
+      display: flex; align-items: center; gap: 16px;
+      box-shadow: 0 16px 48px rgba(0,0,0,.5); z-index: 9999;
+      max-width: 420px; width: calc(100% - 40px);
+      animation: slideUp .4s ease;
+    }
+    @keyframes slideUp { from{transform:translateX(-50%) translateY(100px);opacity:0} to{transform:translateX(-50%) translateY(0);opacity:1} }
+    #pwa-banner img { width: 48px; height: 48px; border-radius: 12px; }
+    .pwa-banner-text strong { display: block; font-size: .95rem; color: var(--white); margin-bottom: 2px; }
+    .pwa-banner-text span { font-size: .78rem; color: var(--muted); }
+    .pwa-banner-actions { display: flex; gap: 8px; margin-left: auto; flex-shrink: 0; }
+    .pwa-install-btn {
+      padding: 9px 18px; border-radius: 8px; font-size: .82rem; font-weight: 700;
+      background: var(--gold); color: var(--navy); transition: all .2s;
+    }
+    .pwa-install-btn:hover { background: var(--gold2); }
+    .pwa-dismiss { width: 32px; height: 32px; border-radius: 8px; background: transparent;
+      border: 1px solid rgba(255,255,255,.1); color: var(--muted); font-size: .85rem; }
+    .pwa-dismiss:hover { background: rgba(255,255,255,.07); color: var(--white); }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ────────────────────────────────────────── -->
+  <nav id="navbar">
+    <div class="nav-logo">
+      <img src="Logo.png" alt="Glória do Mar" onerror="this.style.display='none'">
+      <span class="nav-brand">Glória do Mar</span>
+    </div>
+    <div class="nav-links" id="nav-links">
+      <a href="#experiencia">Experiência</a>
+      <a href="#cardapio">Cardápio</a>
+      <a href="#instalar">App</a>
+    </div>
+    <div class="nav-cta">
+      <button class="btn-install" onclick="openApp()"><i class="fas fa-mobile-alt"></i> Abrir App</button>
+      <button class="btn-gold" onclick="reservar()"><i class="fas fa-calendar-check"></i> Reservar</button>
+    </div>
+  </nav>
+
+  <!-- ── HERO ────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <div class="hero-badge"><span></span> Temporada 2026 Aberta</div>
+      <h1 class="hero-title">Glória<br><em>do Mar</em></h1>
+      <p class="hero-sub">Gastronomia premium com os pés na areia</p>
+      <div class="hero-loc"><i class="fas fa-map-marker-alt"></i> Angra dos Reis · Tabatinga</div>
+      <div class="hero-actions">
+        <button class="btn-hero-primary" onclick="reservar()">
+          <i class="fas fa-calendar-check"></i> Reservar Mesa
+        </button>
+        <button class="btn-hero-install" onclick="openApp()">
+          <i class="fas fa-mobile-alt"></i> Abrir Cardápio
+        </button>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <i class="fas fa-chevron-down"></i>
+      <span>Explorar</span>
+    </div>
+  </section>
+
+  <!-- ── STATS ───────────────────────────────────────── -->
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num">10+</div><div class="stat-label">Cabanas VIP</div></div>
+    <div class="stat"><div class="stat-num">40+</div><div class="stat-label">Pratos & Drinks</div></div>
+    <div class="stat"><div class="stat-num">5★</div><div class="stat-label">Avaliação Média</div></div>
+    <div class="stat"><div class="stat-num">24/7</div><div class="stat-label">NEXUS iA Ativo</div></div>
+  </div>
+
+  <!-- ── EXPERIÊNCIA ──────────────────────────────────── -->
+  <section id="experiencia">
+    <div class="container">
+      <div class="section-tag">A Experiência</div>
+      <h2 class="section-title">Cada momento<br>é <em>único aqui</em></h2>
+      <p class="section-sub">Do entardecer dourado à madrugada com som do mar, vivemos cada detalhe para que você só precise curtir.</p>
+      <div class="exp-grid">
+        <div class="exp-card">
+          <img class="exp-img" src="gloria_vip_experience_app_1774727338197.jpg" alt="VIP" onerror="this.style.height='140px';this.style.background='#1e3a5f'">
+          <div class="exp-body">
+            <div class="exp-icon gold"><i class="fas fa-star"></i></div>
+            <h3>Cabanas & Mesas VIP</h3>
+            <p>Espaços privativos com consumo mínimo, atendimento dedicado e acesso à fila prioritária da cozinha.</p>
+            <div class="exp-tag"><i class="fas fa-circle" style="font-size:6px"></i> Reserva Exclusiva</div>
+          </div>
+        </div>
+        <div class="exp-card">
+          <img class="exp-img" src="gloria_kds_kitchen_tech_1774727454392.jpg" alt="Gastronomia" onerror="this.style.height='140px';this.style.background='#1e3a5f'">
+          <div class="exp-body">
+            <div class="exp-icon white"><i class="fas fa-utensils"></i></div>
+            <h3>Gastronomia do Mar</h3>
+            <p>Frutos do mar frescos capturados diariamente. Drinks autorais inspirados no litoral carioca.</p>
+            <div class="exp-tag" style="color:var(--muted)"><i class="fas fa-circle" style="font-size:6px"></i> Menu Sazonal</div>
+          </div>
+        </div>
+        <div class="exp-card">
+          <img class="exp-img" src="gloria_ai_vision_tabatinga_1774727274721.jpg" alt="Tecnologia" onerror="this.style.height:'140px';this.style.background='#1e3a5f'">
+          <div class="exp-body">
+            <div class="exp-icon teal"><i class="fas fa-bolt"></i></div>
+            <h3>Mesa Viva™ com NEXUS iA</h3>
+            <p>Peça pelo celular, acompanhe o preparo em tempo real e pague sem fila — tudo pelo app.</p>
+            <div class="exp-tag" style="color:var(--teal)"><i class="fas fa-circle" style="font-size:6px"></i> NEXUS Online</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CARDÁPIO ─────────────────────────────────────── -->
+  <section id="cardapio" class="menu-section">
+    <div class="container">
+      <div class="section-tag">Cardápio</div>
+      <h2 class="section-title">Do mar<br>para a <em>sua mesa</em></h2>
+      <div class="menu-scroll">
+        <div class="menu-card" onclick="openApp()">
+          <img src="https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&q=80" alt="Combo VIP">
+          <div class="menu-card-body">
+            <div class="menu-card-name">Combo Sunset VIP</div>
+            <div class="menu-card-desc">Champagne + Bruschettas premium</div>
+            <div class="menu-card-price">R$ 550</div>
+          </div>
+        </div>
+        <div class="menu-card" onclick="openApp()">
+          <img src="https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=400&q=80" alt="Polvo">
+          <div class="menu-card-body">
+            <div class="menu-card-name">Polvo Grelhado</div>
+            <div class="menu-card-desc">Azeite extra virgem e limão siciliano</div>
+            <div class="menu-card-price">R$ 95</div>
+          </div>
+        </div>
+        <div class="menu-card" onclick="openApp()">
+          <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&q=80" alt="Iscas">
+          <div class="menu-card-body">
+            <div class="menu-card-name">Iscas de Peixe Artesanal</div>
+            <div class="menu-card-desc">Peixe fresco com molho da casa</div>
+            <div class="menu-card-price">R$ 68</div>
+          </div>
+        </div>
+        <div class="menu-card" onclick="openApp()">
+          <img src="https://images.unsplash.com/photo-1544145945-f904253d0c7e?w=400&q=80" alt="Aperol">
+          <div class="menu-card-body">
+            <div class="menu-card-name">Aperol Spritz Premium</div>
+            <div class="menu-card-desc">Com laranja fresca e prosecco</div>
+            <div class="menu-card-price">R$ 45</div>
+          </div>
+        </div>
+        <div class="menu-card" onclick="openApp()">
+          <img src="https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=400&q=80" alt="Gin">
+          <div class="menu-card-body">
+            <div class="menu-card-name">Gin & Tônica Premium</div>
+            <div class="menu-card-desc">Tanqueray + Fever-Tree + botanicals</div>
+            <div class="menu-card-price">R$ 38</div>
+          </div>
+        </div>
+        <div class="menu-card" onclick="openApp()">
+          <img src="https://images.unsplash.com/photo-1608270586620-248524c67de9?w=400&q=80" alt="Corona">
+          <div class="menu-card-body">
+            <div class="menu-card-name">Corona Extra Long Neck</div>
+            <div class="menu-card-desc">Gelada, direto do gelo</div>
+            <div class="menu-card-price">R$ 22</div>
+          </div>
+        </div>
+      </div>
+      <div class="menu-cta">
+        <button class="btn-outline-gold" onclick="openApp()">
+          <i class="fas fa-book-open"></i> Ver Cardápio Completo
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HOW IT WORKS ─────────────────────────────────── -->
+  <section id="instalar" class="how-section">
+    <div class="container">
+      <div class="section-tag">Como Funciona</div>
+      <h2 class="section-title">Peça sem<br><em>sair da areia</em></h2>
+      <p class="section-sub">Instale o app, escolha pelos fotos e valores, e o pedido vai direto para a central. Simples assim.</p>
+      <div class="how-grid">
+        <div class="how-step">
+          <div class="how-num">1</div>
+          <h3>Instale o App</h3>
+          <p>Clique em "Adicionar à tela inicial" — não precisa de App Store. Funciona em qualquer celular.</p>
+        </div>
+        <div class="how-step">
+          <div class="how-num">2</div>
+          <h3>Escolha pelo Cardápio</h3>
+          <p>Navegue pelas fotos dos pratos e drinks. Toque para adicionar. Só fotos e preços — sem complicação.</p>
+        </div>
+        <div class="how-step">
+          <div class="how-num">3</div>
+          <h3>Acompanhe em Tempo Real</h3>
+          <p>Seu pedido vai para a central, é aprovado e você acompanha o preparo até chegar na sua mesa.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── INSTALL CTA ───────────────────────────────────── -->
+  <section class="install-section">
+    <div class="install-badge"><i class="fas fa-bolt"></i> Powered by NEXUS iA</div>
+    <h2 class="section-title" style="font-family:var(--serif);font-size:clamp(2rem,4vw,2.8rem)">Sua mesa, <em>seu ritmo</em></h2>
+    <p style="font-size:1rem;color:var(--muted);max-width:500px;margin:0 auto;line-height:1.7">
+      Instale agora e tenha o Glória do Mar sempre no seu celular — pedidos, reservas e consumo em tempo real.
+    </p>
+    <div class="install-actions">
+      <button class="btn-install-big" onclick="installPWA()">
+        <i class="fas fa-download"></i> Instalar App Grátis
+      </button>
+      <button class="btn-whatsapp" onclick="whatsapp()">
+        <i class="fab fa-whatsapp"></i> Falar no WhatsApp
+      </button>
+    </div>
+    <p style="margin-top:24px;font-size:.75rem;color:var(--muted)">
+      <i class="fas fa-shield-alt" style="color:var(--gold);margin-right:5px"></i>
+      Sem cadastro · Sem senha · Funciona offline
+    </p>
+  </section>
+
+  <!-- ── FOOTER ────────────────────────────────────────── -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <h2>Glória do Mar</h2>
+        <p>Gastronomia premium à beira-mar em Angra dos Reis. Uma experiência que começa antes de você sentar.</p>
+        <div class="footer-social">
+          <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-whatsapp"></i></a>
+          <a href="#" class="social-btn"><i class="fab fa-tiktok"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Navegação</h4>
+        <ul>
+          <li><a href="#experiencia">Experiência</a></li>
+          <li><a href="#cardapio">Cardápio</a></li>
+          <li><a href="#instalar">Instalar App</a></li>
+          <li><a href="gloria_mvp_nexus.html">Área Operacional</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contato</h4>
+        <ul>
+          <li><a href="#"><i class="fas fa-map-marker-alt" style="width:16px"></i> Tabatinga, Angra dos Reis - RJ</a></li>
+          <li><a href="#"><i class="fas fa-clock" style="width:16px"></i> Ter–Dom: 11h às 22h</a></li>
+          <li><a href="#"><i class="fab fa-whatsapp" style="width:16px"></i> (24) 9xxxx-xxxx</a></li>
+          <li><a href="#"><i class="fas fa-envelope" style="width:16px"></i> ola@gloriadomar.com.br</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 Glória do Mar · Todos os direitos reservados · Powered by <span>NEXUS iA</span></p>
+    </div>
+  </footer>
+
+  <!-- ── PWA INSTALL BANNER ────────────────────────────── -->
+  <div id="pwa-banner" style="display:none">
+    <img src="Logo.png" alt="Logo" onerror="this.style.display='none'">
+    <div class="pwa-banner-text">
+      <strong>Glória do Mar</strong>
+      <span>Adicione à tela inicial — sem App Store</span>
+    </div>
+    <div class="pwa-banner-actions">
+      <button class="pwa-install-btn" onclick="installPWA()">Instalar</button>
+      <button class="pwa-dismiss" onclick="dismissBanner()">✕</button>
+    </div>
+  </div>
+
+  <script>
+    // ── NAV SCROLL ────────────────────────────────────────
+    window.addEventListener('scroll', () => {
+      document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+    });
+
+    // ── PWA INSTALL ───────────────────────────────────────
+    let deferredPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredPrompt = e;
+      setTimeout(() => {
+        document.getElementById('pwa-banner').style.display = 'flex';
+      }, 3000);
+    });
+
+    async function installPWA() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        document.getElementById('pwa-banner').style.display = 'none';
+        if (outcome === 'accepted') openApp();
+      } else {
+        // Fallback — abre o app diretamente
+        openApp();
+      }
+    }
+
+    function dismissBanner() {
+      document.getElementById('pwa-banner').style.display = 'none';
+    }
+
+    function openApp() {
+      window.location.href = 'gloria_mvp_nexus.html';
+    }
+
+    function reservar() {
+      window.location.href = 'gloria_mvp_nexus.html';
+    }
+
+    function whatsapp() {
+      window.open('https://wa.me/5524999999999?text=Olá! Gostaria de fazer uma reserva no Glória do Mar.', '_blank');
+    }
+
+    // ── SERVICE WORKER ────────────────────────────────────
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('[SW] Glória do Mar registrado:', reg.scope))
+        .catch(err => console.warn('[SW] Erro:', err));
+    }
+
+    // ── SCROLL ANIMATIONS ─────────────────────────────────
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.exp-card, .how-step, .stat').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(30px)';
+      el.style.transition = 'opacity .6s ease, transform .6s ease';
+      observer.observe(el);
+    });
+  </script>
+</body>
+</html>

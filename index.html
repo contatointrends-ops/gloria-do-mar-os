@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glória do Mar OS — Powered by NEXUS iA</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0a192f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Glória do Mar">
+<link rel="apple-touch-icon" href="Logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Outfit',sans-serif;background:#060e1a;color:#e2e8f0;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+
+.orb{position:fixed;border-radius:50%;filter:blur(90px);opacity:.2;pointer-events:none}
+
+.card{position:relative;background:rgba(255,255,255,.03);border:1px solid rgba(6,182,212,.2);border-radius:24px;padding:56px 48px;max-width:520px;width:90%;text-align:center;backdrop-filter:blur(20px);box-shadow:0 40px 80px rgba(0,0,0,.6)}
+.card::before{content:'';position:absolute;inset:0;border-radius:24px;background:linear-gradient(135deg,rgba(6,182,212,.04),rgba(212,175,55,.04));pointer-events:none}
+
+.logo-mark{width:72px;height:72px;border-radius:16px;background:linear-gradient(135deg,#06b6d4,#d4af37);display:inline-flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:900;color:#060e1a;margin-bottom:20px;box-shadow:0 0 40px rgba(6,182,212,.3)}
+
+h1{font-size:1.8rem;font-weight:800;color:white;margin-bottom:6px}
+.sub{font-size:.9rem;color:#06b6d4;font-weight:600;margin-bottom:6px}
+p{font-size:.85rem;color:#8899aa;margin-bottom:36px;line-height:1.6}
+
+.btn-grid{display:flex;flex-direction:column;gap:12px;position:relative;z-index:1}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;padding:16px 24px;border-radius:12px;font-size:1rem;font-weight:700;text-decoration:none;transition:all .25s;border:none;cursor:pointer;font-family:'Outfit',sans-serif}
+.btn-primary{background:linear-gradient(135deg,#06b6d4,#0891b2);color:white;box-shadow:0 8px 24px rgba(6,182,212,.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(6,182,212,.45)}
+.btn-secondary{background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.3);color:#d4af37}
+.btn-secondary:hover{background:rgba(212,175,55,.2);transform:translateY(-2px)}
+
+.badge{display:inline-flex;align-items:center;gap:5px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);color:#22c55e;padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:700;margin-bottom:20px}
+.dot{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+footer{margin-top:28px;font-size:.72rem;color:#4a5568}
+</style>
+</head>
+<body>
+
+<div class="orb" style="width:500px;height:500px;background:radial-gradient(#06b6d4,transparent);top:-150px;right:-100px"></div>
+<div class="orb" style="width:400px;height:400px;background:radial-gradient(#d4af37,transparent);bottom:-100px;left:-100px"></div>
+
+<div class="card">
+  <div class="logo-mark">GM</div>
+  <div class="badge"><div class="dot"></div> NEXUS iA · Ao vivo</div>
+  <h1>Glória do Mar OS</h1>
+  <div class="sub">Beach Club Intelligence Platform</div>
+  <p>Plataforma operacional completa para beach clubs — reservas, KDS, caixa, dashboard executivo e IA copilot, tudo em tempo real.</p>
+
+  <div class="btn-grid">
+    <a href="app.html" class="btn btn-primary">
+      ⚡ Entrar no Sistema Operacional
+    </a>
+    <a href="landing.html" class="btn btn-secondary">
+      🌊 Landing Page do Beach Club
+    </a>
+    <a href="mapa.html" class="btn btn-secondary">
+      🧠 Mapa Cognitivo — Cérebro de Funções
+    </a>
+    <a href="mapa-app.html" class="btn btn-secondary">
+      🗺 Mapa de Usabilidade — Guia do Usuário
+    </a>
+  </div>
+
+  <footer>Glória do Mar · Tabatinga Beach Club · Powered by NEXUS iA</footer>
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
