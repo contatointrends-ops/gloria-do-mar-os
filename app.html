@@ -148,16 +148,24 @@ input,select,textarea{font-family:var(--font)}
 .booking-grid{display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start}
 @media(max-width:960px){.booking-grid{grid-template-columns:1fr}}
 
-.zone-map{display:flex;flex-direction:column;gap:14px}
-.zone-card{background:var(--surface2);border:1px solid rgba(255,255,255,.07);border-radius:var(--r-md);padding:20px}
-.zone-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-.zone-head h4{font-size:.95rem;color:white}
-.spots-row{display:flex;gap:10px;flex-wrap:wrap}
-.spot{width:48px;height:48px;border-radius:var(--r-sm);border:2px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;cursor:pointer;transition:all .2s;background:var(--surface3)}
-.spot.available{border-color:rgba(34,197,94,.4);color:var(--success)}.spot.available:hover{background:rgba(34,197,94,.1);border-color:var(--success)}
-.spot.occupied{border-color:rgba(239,68,68,.3);color:rgba(239,68,68,.5);cursor:not-allowed;background:rgba(239,68,68,.05)}
-.spot.selected{border-color:var(--info);background:rgba(6,182,212,.15);color:var(--info)}
-.spot.reserved{border-color:rgba(245,158,11,.3);color:var(--warning);cursor:not-allowed;background:rgba(245,158,11,.05)}
+.zone-map{display:flex;flex-direction:column;gap:16px}
+.zone-section{background:var(--surface2);border:1px solid rgba(255,255,255,.07);border-radius:var(--r-md);padding:16px 20px}
+.zone-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.zone-section-title{display:flex;align-items:center;gap:10px;font-weight:700;font-size:.95rem;color:white}
+.zone-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.85rem}
+.table-grid{display:flex;flex-wrap:wrap;gap:8px}
+.table-btn{width:52px;height:44px;border-radius:var(--r-sm);border:2px solid;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.9rem;cursor:pointer;transition:all .2s;font-family:var(--font);background:transparent}
+.table-btn.free:hover{transform:scale(1.08);filter:brightness(1.3)}
+.table-btn.occupied{opacity:.45;cursor:not-allowed}
+.table-btn.reserved{opacity:.6;cursor:not-allowed}
+.table-btn.selected{box-shadow:0 0 0 3px white;transform:scale(1.08)}
+/* Mesa picker modal */
+.mesa-picker{display:flex;flex-direction:column;gap:14px;margin-top:12px}
+.mesa-picker-zone{background:var(--surface3);border-radius:var(--r-sm);padding:12px}
+.mesa-picker-label{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+/* Legend */
+.kds-legend{display:flex;gap:16px;font-size:.72rem;font-weight:700}
+.leg{display:flex;align-items:center;gap:5px}
 
 .selection-card{background:var(--surface2);border:1px solid rgba(255,255,255,.07);border-radius:var(--r-md);padding:24px;position:sticky;top:0}
 .summary-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.85rem}
@@ -475,16 +483,18 @@ input,select,textarea{font-family:var(--font)}
     <!-- ── VIEW: MINHA MESA ── -->
     <section class="view-section" id="view-minha-mesa">
       <div id="mesa-login-panel">
-        <div style="max-width:400px;margin:0 auto;padding-top:40px">
-          <div class="card p-3" style="text-align:center">
-            <i class="fas fa-qrcode" style="font-size:3rem;color:var(--info);margin-bottom:16px"></i>
-            <h3 style="color:white;margin-bottom:8px">Mesa Viva</h3>
-            <p class="text-muted mb-2">Informe o código da sua mesa.</p>
-            <input type="text" class="form-control mb-1" id="mesa-code-input" placeholder="Ex: VIP-1">
-            <button class="btn btn-primary btn-block mt-1" onclick="startMesaSession()">
-              <i class="fas fa-play-circle"></i> Iniciar Sessão
-            </button>
+        <div style="max-width:640px;margin:0 auto;padding-top:20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div>
+              <h3 style="color:white;margin-bottom:4px"><i class="fas fa-map-marker-alt" style="color:var(--info);margin-right:8px"></i>Selecione sua Mesa</h3>
+              <p class="text-muted text-sm">Toque na mesa disponível para iniciar a sessão</p>
+            </div>
+            <div class="kds-legend">
+              <span class="leg"><span style="width:10px;height:10px;border-radius:3px;background:rgba(34,197,94,.4);display:inline-block"></span>Livre</span>
+              <span class="leg"><span style="width:10px;height:10px;border-radius:3px;background:rgba(239,68,68,.4);display:inline-block"></span>Ocupada</span>
+            </div>
           </div>
+          <div class="mesa-picker" id="mesa-picker-grid"></div>
         </div>
       </div>
       <div id="mesa-active-panel" class="hidden">
@@ -793,9 +803,11 @@ Responda como os agentes Analyst, Critic e Creative: identifique o status, garga
 
     // ── Analyst Briefing ──
     const final = data.final_decision || {};
+    const allAgents = data.all_agents || [];
+    const analystResult  = allAgents.find(a => a.agent?.toLowerCase() === 'analyst');
     if (briefingEl) {
       briefingEl.classList.remove('ai-typing');
-      briefingEl.textContent = final.analysis || 'Análise indisponível.';
+      briefingEl.textContent = analystResult?.analysis || final.analysis || 'Análise indisponível.';
       const agentLbl = document.getElementById('ia-briefing-agent');
       if (agentLbl) agentLbl.textContent = final.agent ? `via ${final.agent}` : '';
     }
@@ -810,8 +822,7 @@ Responda como os agentes Analyst, Critic e Creative: identifique o status, garga
     }
 
     // ── Critic Alerts ──
-    const allAgents = data.all_agents || [];
-    const criticResult  = allAgents.find(a => a.agent === 'Critic');
+    const criticResult  = allAgents.find(a => a.agent?.toLowerCase() === 'critic');
     if (btEl) {
       if (criticResult) {
         btEl.innerHTML = `<div class="ai-insight">
@@ -829,7 +840,7 @@ Responda como os agentes Analyst, Critic e Creative: identifique o status, garga
     }
 
     // ── Creative Actions ──
-    const creativeResult = allAgents.find(a => a.agent === 'Creative');
+    const creativeResult = allAgents.find(a => a.agent?.toLowerCase() === 'creative');
     if (acEl && creativeResult) {
       acEl.innerHTML = `<div class="ai-insight">
         <div class="ai-insight-icon" style="background:rgba(6,182,212,.15);color:var(--info)"><i class="fas fa-lightbulb"></i></div>
@@ -839,9 +850,9 @@ Responda como os agentes Analyst, Critic e Creative: identifique o status, garga
 
     // ── Agents panel ──
     if (agEl && allAgents.length > 0) {
-      const colors = { Analyst: 'info', Creative: 'success', Critic: 'danger' };
+      const colors = { analyst: 'info', creative: 'success', critic: 'danger' };
       agEl.innerHTML = allAgents.map(a => {
-        const col = colors[a.agent] || 'muted';
+        const col = colors[a.agent?.toLowerCase()] || 'muted';
         const conf = Math.round((a.confidence || 0) * 100);
         return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)">
           <div style="width:7px;height:7px;border-radius:50%;background:var(--${col});flex-shrink:0"></div>
@@ -928,18 +939,25 @@ const State = {
   tenant: 'gloria',
   user: null,
   orders: {},
-  tables: {
-    'VIP-1':   { zone:'Cabana VIP', status:'free', minSpend:500, capacity:6, total:0 },
-    'VIP-2':   { zone:'Cabana VIP', status:'free', minSpend:500, capacity:6, total:0 },
-    'VIP-3':   { zone:'Cabana VIP', status:'occupied', minSpend:500, capacity:6, total:850 },
-    'DECK-A':  { zone:'Deck Central', status:'reserved', minSpend:200, capacity:4, total:200 },
-    'DECK-B':  { zone:'Deck Central', status:'free', minSpend:200, capacity:4, total:0 },
-    'DECK-C':  { zone:'Deck Central', status:'free', minSpend:200, capacity:4, total:0 },
-    'AREIA-1': { zone:'Pé na Areia', status:'free', minSpend:100, capacity:4, total:0 },
-    'AREIA-2': { zone:'Pé na Areia', status:'occupied', minSpend:100, capacity:4, total:320 },
-    'AREIA-3': { zone:'Pé na Areia', status:'free', minSpend:100, capacity:4, total:0 },
-    'BALCÃO':  { zone:'Bar Central', status:'free', minSpend:50, capacity:2, total:0 }
-  },
+  tables: (()=>{
+    // Numeração contínua 1→120, por distância do caixa
+    const ZONES = [
+      { name:'Balcão',     count:6,  minSpend:50,  capacity:2 }, // 1-6
+      { name:'Bistrô',     count:2,  minSpend:80,  capacity:4 }, // 7-8
+      { name:'Deck',       count:12, minSpend:150, capacity:4 }, // 9-20
+      { name:'Guarda-sol', count:50, minSpend:80,  capacity:4 }, // 21-70
+      { name:'Areia',      count:20, minSpend:80,  capacity:4 }, // 71-90
+      { name:'Delivery',   count:30, minSpend:30,  capacity:1 }, // 91-120
+    ];
+    const t = {};
+    let n = 1;
+    ZONES.forEach(z => {
+      for(let i=0; i<z.count; i++, n++){
+        t[String(n)] = { zone:z.name, status:'free', minSpend:z.minSpend, capacity:z.capacity, total:0 };
+      }
+    });
+    return t;
+  })(),
   rsvp: { step:1, selectedTable:null, cart:[], pax:2 },
   mesa: { active:false, tableId:null, total:0, draftCart:[], timeline:[] },
   caixa: { selectedId:null },
@@ -947,12 +965,82 @@ const State = {
 };
 
 const CATALOG = [
-  { id:'c1', name:'Combo Sunset VIP', price:550, cat:'food', img:'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?auto=format&fit=crop&w=300&q=80', desc:'Champagne + Bruschettas' },
-  { id:'c2', name:'Iscas de Peixe Artesanal', price:68, cat:'food', img:'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=300&q=80', desc:'Peixe fresco com molho' },
-  { id:'c3', name:'Polvo Grelhado', price:95, cat:'food', img:'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=300&q=80', desc:'Azeite e limão siciliano' },
-  { id:'c4', name:'Aperol Spritz Premium', price:45, cat:'drink', img:'https://images.unsplash.com/photo-1544145945-f904253d0c7e?auto=format&fit=crop&w=300&q=80', desc:'Com laranja fresca' },
-  { id:'c5', name:'Gin & Tônica Premium', price:38, cat:'drink', img:'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=300&q=80', desc:'Tanqueray + Fever-Tree' },
-  { id:'c6', name:'Corona Extra (long neck)', price:22, cat:'drink', img:'https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=300&q=80', desc:'Gelada' }
+  // ── ESPECIAIS & COMBOS ──────────────────────────────────
+  { id:'c01', name:'Combo Sunset VIP', price:550, cat:'food', section:'⭐ Especiais', img:'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?auto=format&fit=crop&w=300&q=80', desc:'Champagne + Bruschettas + Camarão grelhado' },
+  { id:'c02', name:'Combo Dia de Sol', price:145, cat:'food', section:'⭐ Especiais', img:'https://images.unsplash.com/photo-1565299507177-b0ac66763828?auto=format&fit=crop&w=300&q=80', desc:'Iscas de peixe + 2 Caipirinhas da casa' },
+  { id:'c03', name:'Tábua de Frutos do Mar', price:185, cat:'food', section:'⭐ Especiais', img:'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=300&q=80', desc:'Camarão, polvo, lula, mariscos e molhos' },
+  // ── ENTRADAS & PETISCOS ─────────────────────────────────
+  { id:'c04', name:'Iscas de Peixe Artesanal', price:68, cat:'food', section:'🦐 Entradas', img:'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=300&q=80', desc:'Peixe fresco com molho tártaro' },
+  { id:'c05', name:'Camarão Empanado', price:72, cat:'food', section:'🦐 Entradas', img:'https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?auto=format&fit=crop&w=300&q=80', desc:'12 unidades com molho rosê' },
+  { id:'c06', name:'Polvo Grelhado', price:95, cat:'food', section:'🦐 Entradas', img:'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=300&q=80', desc:'Azeite e limão siciliano' },
+  { id:'c07', name:'Ceviche de Peixe Branco', price:65, cat:'food', section:'🦐 Entradas', img:'https://images.unsplash.com/photo-1535399831218-d5bd36d1a6b3?auto=format&fit=crop&w=300&q=80', desc:'Limão, coentro e pimenta dedo-de-moça' },
+  { id:'c08', name:'Lula à Milanesa', price:58, cat:'food', section:'🦐 Entradas', img:'https://images.unsplash.com/photo-1604909052743-94e838986d24?auto=format&fit=crop&w=300&q=80', desc:'Com aioli de alho negro' },
+  { id:'c09', name:'Bolinho de Bacalhau', price:48, cat:'food', section:'🦐 Entradas', img:'https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&w=300&q=80', desc:'6 unidades com azeitonas e azeite' },
+  { id:'c10', name:'Bruschetta da Casa', price:38, cat:'food', section:'🦐 Entradas', img:'https://images.unsplash.com/photo-1572695157366-5e585ab2b69f?auto=format&fit=crop&w=300&q=80', desc:'Tomate, manjericão e azeite trufado' },
+  { id:'c11', name:'Tábua de Frios Premium', price:85, cat:'food', section:'🦐 Entradas', img:'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&w=300&q=80', desc:'Queijos, embutidos e pães artesanais' },
+  { id:'c12', name:'Batata Rústica', price:32, cat:'food', section:'🦐 Entradas', img:'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=300&q=80', desc:'Com ervas, alecrim e molho especial' },
+  { id:'c13', name:'Onion Rings Artesanal', price:28, cat:'food', section:'🦐 Entradas', img:'https://images.unsplash.com/photo-1639024471283-03518883512d?auto=format&fit=crop&w=300&q=80', desc:'Empanados crocantes com molho ranch' },
+  // ── PRATOS PRINCIPAIS ───────────────────────────────────
+  { id:'c14', name:'Filé de Peixe Grelhado', price:88, cat:'food', section:'🍽 Pratos', img:'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=300&q=80', desc:'Manteiga de ervas, limão e legumes' },
+  { id:'c15', name:'Moqueca de Frutos do Mar', price:120, cat:'food', section:'🍽 Pratos', img:'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=300&q=80', desc:'Leite de coco, dendê e coentro' },
+  { id:'c16', name:'Moqueca de Camarão', price:110, cat:'food', section:'🍽 Pratos', img:'https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=300&q=80', desc:'Tradicional baiana com pirão' },
+  { id:'c17', name:'Risotto de Frutos do Mar', price:115, cat:'food', section:'🍽 Pratos', img:'https://images.unsplash.com/photo-1476124369491-e7addf5db371?auto=format&fit=crop&w=300&q=80', desc:'Camarão, lula e polvo ao parmesão' },
+  { id:'c18', name:'Salmão Grelhado', price:98, cat:'food', section:'🍽 Pratos', img:'https://images.unsplash.com/photo-1485921325833-c519793a4a11?auto=format&fit=crop&w=300&q=80', desc:'Com purê de batata-doce e aspargos' },
+  { id:'c19', name:'Lagosta ao Alho e Óleo', price:220, cat:'food', section:'🍽 Pratos', img:'https://images.unsplash.com/photo-1533産业1567099?auto=format&fit=crop&w=300&q=80', desc:'Com manteiga de limão siciliano' },
+  { id:'c20', name:'Filé de Atum Selado', price:92, cat:'food', section:'🍽 Pratos', img:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80', desc:'Com molho de gengibre e gergelim' },
+  { id:'c21', name:'Massa ao Camarão', price:78, cat:'food', section:'🍽 Pratos', img:'https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=300&q=80', desc:'Fettuccine com molho cremoso de alho' },
+  { id:'c22', name:'Tilápia na Brasa', price:65, cat:'food', section:'🍽 Pratos', img:'https://images.unsplash.com/photo-1432139555190-58524dae6a55?auto=format&fit=crop&w=300&q=80', desc:'Inteira com pirão e farofa de dendê' },
+  { id:'c23', name:'Sanduíche de Peixe Artesanal', price:55, cat:'food', section:'🍽 Pratos', img:'https://images.unsplash.com/photo-1550507992-eb63ffee0847?auto=format&fit=crop&w=300&q=80', desc:'No pão brioche com salada e cheddar' },
+  // ── SALADAS ─────────────────────────────────────────────
+  { id:'c24', name:'Salada Verde Completa', price:38, cat:'food', section:'🥗 Saladas', img:'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=300&q=80', desc:'Mix de folhas, nozes e croutons' },
+  { id:'c25', name:'Salada Caprese', price:45, cat:'food', section:'🥗 Saladas', img:'https://images.unsplash.com/photo-1562059390-a761a084768e?auto=format&fit=crop&w=300&q=80', desc:'Mozzarella de búfala, tomate e manjericão' },
+  { id:'c26', name:'Salada de Quinoa', price:48, cat:'food', section:'🥗 Saladas', img:'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?auto=format&fit=crop&w=300&q=80', desc:'Com abacate, manga e camarão grelhado' },
+  { id:'c27', name:'Salada Niçoise', price:52, cat:'food', section:'🥗 Saladas', img:'https://images.unsplash.com/photo-1529059997568-3d847b1154f0?auto=format&fit=crop&w=300&q=80', desc:'Atum, ovo, azeitona e alcaparras' },
+  // ── SOBREMESAS ──────────────────────────────────────────
+  { id:'c28', name:'Açaí VIP 700ml', price:42, cat:'food', section:'🍦 Sobremesas', img:'https://images.unsplash.com/photo-1501746877-14782df58970?auto=format&fit=crop&w=300&q=80', desc:'Granola premium, morango e mel' },
+  { id:'c29', name:'Açaí 500ml', price:28, cat:'food', section:'🍦 Sobremesas', img:'https://images.unsplash.com/photo-1501746877-14782df58970?auto=format&fit=crop&w=300&q=80', desc:'Com banana e granola artesanal' },
+  { id:'c30', name:'Petit Gateau', price:32, cat:'food', section:'🍦 Sobremesas', img:'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=300&q=80', desc:'Quente por dentro com sorvete de baunilha' },
+  { id:'c31', name:'Mousse de Maracujá', price:22, cat:'food', section:'🍦 Sobremesas', img:'https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=300&q=80', desc:'Cremoso com calda de maracujá fresco' },
+  { id:'c32', name:'Pudim da Casa', price:18, cat:'food', section:'🍦 Sobremesas', img:'https://images.unsplash.com/photo-1559620192-032c4bc4674e?auto=format&fit=crop&w=300&q=80', desc:'Receita clássica da avó' },
+  { id:'c33', name:'Crepe Doce', price:25, cat:'food', section:'🍦 Sobremesas', img:'https://images.unsplash.com/photo-1519676867240-f03562e64548?auto=format&fit=crop&w=300&q=80', desc:'Nutella, morango e chantilly' },
+  // ── COQUETÉIS ───────────────────────────────────────────
+  { id:'c34', name:'Caipirinha Clássica', price:28, cat:'drink', section:'🍹 Coquetéis', img:'https://images.unsplash.com/photo-1544145945-f904253d0c7e?auto=format&fit=crop&w=300&q=80', desc:'Cachaça artesanal, limão e açúcar' },
+  { id:'c35', name:'Caipirinha de Morango', price:32, cat:'drink', section:'🍹 Coquetéis', img:'https://images.unsplash.com/photo-1571091718767-18b5b1457add?auto=format&fit=crop&w=300&q=80', desc:'Cachaça e morango frescos da estação' },
+  { id:'c36', name:'Caipirinha de Maracujá', price:32, cat:'drink', section:'🍹 Coquetéis', img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=300&q=80', desc:'Cachaça e maracujá com açúcar mascavo' },
+  { id:'c37', name:'Caipiroska Clássica', price:32, cat:'drink', section:'🍹 Coquetéis', img:'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?auto=format&fit=crop&w=300&q=80', desc:'Vodka premium e limão siciliano' },
+  { id:'c38', name:'Mojito', price:36, cat:'drink', section:'🍹 Coquetéis', img:'https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=300&q=80', desc:'Rum branco, hortelã fresca e limão' },
+  { id:'c39', name:'Aperol Spritz Premium', price:45, cat:'drink', section:'🍹 Coquetéis', img:'https://images.unsplash.com/photo-1586985289688-ca3cf47d3e6e?auto=format&fit=crop&w=300&q=80', desc:'Com laranja fresca e bolinha de gelo' },
+  { id:'c40', name:'Hugo Spritz', price:42, cat:'drink', section:'🍹 Coquetéis', img:'https://images.unsplash.com/photo-1507692049790-de58290a4334?auto=format&fit=crop&w=300&q=80', desc:'Elderflower, hortelã e espumante' },
+  { id:'c41', name:'Gin & Tônica Premium', price:38, cat:'drink', section:'🍹 Coquetéis', img:'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=300&q=80', desc:'Tanqueray + Fever-Tree com limão' },
+  { id:'c42', name:'Gin & Tônica Especial', price:48, cat:'drink', section:'🍹 Coquetéis', img:'https://images.unsplash.com/photo-1560512823-829485b8bf24?auto=format&fit=crop&w=300&q=80', desc:"Hendrick's com pepino e flores comestíveis" },
+  { id:'c43', name:'Sex on the Beach', price:35, cat:'drink', section:'🍹 Coquetéis', img:'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=300&q=80', desc:'Vodka, pêssego, laranja e groselha' },
+  { id:'c44', name:'Piña Colada', price:38, cat:'drink', section:'🍹 Coquetéis', img:'https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=300&q=80', desc:'Rum, creme de coco e abacaxi' },
+  { id:'c45', name:'Daiquiri de Frutas', price:32, cat:'drink', section:'🍹 Coquetéis', img:'https://images.unsplash.com/photo-1536935338788-846bb9981813?auto=format&fit=crop&w=300&q=80', desc:'Rum e fruta fresca da estação' },
+  { id:'c46', name:'Negroni', price:42, cat:'drink', section:'🍹 Coquetéis', img:'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=300&q=80', desc:'Gin, Campari e vermute rosso' },
+  { id:'c47', name:'Long Island Ice Tea', price:52, cat:'drink', section:'🍹 Coquetéis', img:'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?auto=format&fit=crop&w=300&q=80', desc:'4 destilados + cola + limão' },
+  { id:'c48', name:'Espumante (taça)', price:38, cat:'drink', section:'🍹 Coquetéis', img:'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=300&q=80', desc:'Chandon Brut bem gelado' },
+  { id:'c49', name:'Vinho Branco (taça)', price:32, cat:'drink', section:'🍹 Coquetéis', img:'https://images.unsplash.com/photo-1474722883778-792e7990302f?auto=format&fit=crop&w=300&q=80', desc:'Chardonnay gelado' },
+  { id:'c50', name:'Vinho Rosé (taça)', price:32, cat:'drink', section:'🍹 Coquetéis', img:'https://images.unsplash.com/photo-1558346490-a72e53ae2d4f?auto=format&fit=crop&w=300&q=80', desc:'Provence style, bem fresco' },
+  // ── CERVEJAS ────────────────────────────────────────────
+  { id:'c51', name:'Heineken 330ml', price:18, cat:'drink', section:'🍺 Cervejas', img:'https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=300&q=80', desc:'Long neck gelada' },
+  { id:'c52', name:'Corona Extra 330ml', price:22, cat:'drink', section:'🍺 Cervejas', img:'https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=300&q=80', desc:'Com limão' },
+  { id:'c53', name:'Stella Artois 330ml', price:18, cat:'drink', section:'🍺 Cervejas', img:'https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=300&q=80', desc:'Long neck gelada' },
+  { id:'c54', name:'Eisenbahn Weiss 500ml', price:26, cat:'drink', section:'🍺 Cervejas', img:'https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=300&q=80', desc:'Garrafa, de trigo' },
+  { id:'c55', name:'Brahma 600ml', price:20, cat:'drink', section:'🍺 Cervejas', img:'https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=300&q=80', desc:'Garrafa gelada' },
+  { id:'c56', name:'Budweiser Long Neck', price:16, cat:'drink', section:'🍺 Cervejas', img:'https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=300&q=80', desc:'330ml gelada' },
+  // ── NÃO-ALCOÓLICOS ──────────────────────────────────────
+  { id:'c57', name:'Água Mineral 500ml', price:8, cat:'drink', section:'🥤 Não-Alcoólicos', img:'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?auto=format&fit=crop&w=300&q=80', desc:'Com ou sem gás' },
+  { id:'c58', name:'Água de Coco 300ml', price:15, cat:'drink', section:'🥤 Não-Alcoólicos', img:'https://images.unsplash.com/photo-1559181567-c3190ca9959b?auto=format&fit=crop&w=300&q=80', desc:'Natural e gelada' },
+  { id:'c59', name:'Coca-Cola 350ml', price:10, cat:'drink', section:'🥤 Não-Alcoólicos', img:'https://images.unsplash.com/photo-1554866585-cd94860890b7?auto=format&fit=crop&w=300&q=80', desc:'Lata gelada' },
+  { id:'c60', name:'Suco de Laranja Natural', price:18, cat:'drink', section:'🥤 Não-Alcoólicos', img:'https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&w=300&q=80', desc:'Espremido na hora, 400ml' },
+  { id:'c61', name:'Suco de Maracujá', price:18, cat:'drink', section:'🥤 Não-Alcoólicos', img:'https://images.unsplash.com/photo-1596825205460-f40ab8d34da4?auto=format&fit=crop&w=300&q=80', desc:'Com ou sem açúcar, 400ml' },
+  { id:'c62', name:'Suco de Abacaxi com Hortelã', price:20, cat:'drink', section:'🥤 Não-Alcoólicos', img:'https://images.unsplash.com/photo-1571091718767-18b5b1457add?auto=format&fit=crop&w=300&q=80', desc:'Refrescante, 400ml' },
+  { id:'c63', name:'Limonada Suíça', price:22, cat:'drink', section:'🥤 Não-Alcoólicos', img:'https://images.unsplash.com/photo-1621263764928-df1444c5e859?auto=format&fit=crop&w=300&q=80', desc:'Com leite condensado e hortelã' },
+  { id:'c64', name:'Chá Gelado', price:16, cat:'drink', section:'🥤 Não-Alcoólicos', img:'https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=300&q=80', desc:'Pêssego ou limão, 400ml' },
+  { id:'c65', name:'Red Bull 250ml', price:28, cat:'drink', section:'🥤 Não-Alcoólicos', img:'https://images.unsplash.com/photo-1551538827-9c037cb4f32a?auto=format&fit=crop&w=300&q=80', desc:'Energy drink gelado' },
+  { id:'c66', name:'Smoothie Tropical', price:24, cat:'drink', section:'🥤 Não-Alcoólicos', img:'https://images.unsplash.com/photo-1505252585461-04db1eb84625?auto=format&fit=crop&w=300&q=80', desc:'Manga, abacaxi e maracujá sem açúcar' },
+  { id:'c67', name:'Kombucha 300ml', price:22, cat:'drink', section:'🥤 Não-Alcoólicos', img:'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=300&q=80', desc:'Fermentado artesanal, sabor da semana' },
+  { id:'c68', name:'Shots Especiais', price:18, cat:'drink', section:'🍹 Coquetéis', img:'https://images.unsplash.com/photo-1560512823-829485b8bf24?auto=format&fit=crop&w=300&q=80', desc:'Jäger, Tequila, Cachaça — pergunte ao bartender' },
 ];
 
 const TENANTS = {
@@ -1071,6 +1159,7 @@ function initApp(){
 
   buildSidebar();
   buildZoneMap();
+  buildMesaPicker();
   buildCatalog('preorder-catalog', true);
   buildCatalog('mesa-catalog', false);
   setDateDefault();
@@ -1123,51 +1212,119 @@ function setDateDefault(){
 function buildCatalog(containerId, showAddBtn){
   const el = document.getElementById(containerId);
   if(!el) return;
-  el.innerHTML = CATALOG.map(p=>`
-    <div class="menu-card">
-      <img src="${p.img}" alt="${p.name}" loading="lazy">
-      <div class="menu-card-body">
-        <h4>${p.name}</h4>
-        <div class="desc">${p.desc}</div>
-        <div class="flex justify-between items-center">
-          <span class="price">${fmtCurrency(p.price)}</span>
-          ${showAddBtn
-            ? `<button class="btn btn-sm btn-primary" onclick="addToPreCart('${p.id}')">+ Adicionar</button>`
-            : `<button class="btn btn-sm btn-primary" onclick="addToMesaDraft('${p.id}')">+ Adicionar</button>`
-          }
+  // Agrupa por seção
+  const sections = {};
+  CATALOG.forEach(p=>{
+    const sec = p.section || 'Outros';
+    if(!sections[sec]) sections[sec]=[];
+    sections[sec].push(p);
+  });
+  el.innerHTML = Object.entries(sections).map(([sec,items])=>`
+    <div style="grid-column:1/-1;padding:8px 0 4px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:4px">
+      <span style="font-size:.75rem;font-weight:700;letter-spacing:.07em;color:var(--muted);text-transform:uppercase">${sec}</span>
+    </div>
+    ${items.map(p=>`
+      <div class="menu-card">
+        <img src="${p.img}" alt="${p.name}" loading="lazy">
+        <div class="menu-card-body">
+          <h4>${p.name}</h4>
+          <div class="desc">${p.desc}</div>
+          <div class="flex justify-between items-center">
+            <span class="price">${fmtCurrency(p.price)}</span>
+            ${showAddBtn
+              ? `<button class="btn btn-sm btn-primary" onclick="addToPreCart('${p.id}')">+ Adicionar</button>`
+              : `<button class="btn btn-sm btn-primary" onclick="addToMesaDraft('${p.id}')">+ Adicionar</button>`
+            }
+          </div>
         </div>
       </div>
-    </div>
+    `).join('')}
   `).join('');
 }
 
 // ── ZONE MAP ──────────────────────────────────────────────
+const ZONE_META = {
+  'Balcão':     { icon:'fa-glass-martini-alt', color:'#f59e0b', bg:'rgba(245,158,11,.15)' }, // 1-6
+  'Bistrô':     { icon:'fa-coffee',            color:'#c084fc', bg:'rgba(192,132,252,.15)' }, // 7-8
+  'Deck':       { icon:'fa-water',             color:'#06b6d4', bg:'rgba(6,182,212,.15)'  }, // 9-20
+  'Guarda-sol': { icon:'fa-umbrella-beach',    color:'#22c55e', bg:'rgba(34,197,94,.15)'  }, // 21-70
+  'Areia':      { icon:'fa-sun',               color:'#fb923c', bg:'rgba(251,146,60,.15)' }, // 71-90
+  'Delivery':   { icon:'fa-motorcycle',        color:'#a78bfa', bg:'rgba(167,139,250,.15)' }, // 91-120
+};
+
 function buildZoneMap(){
   const el = document.getElementById('zone-map');
   if(!el) return;
   const zones = {};
-  Object.entries(State.tables).forEach(([id,t])=>{
-    if(!zones[t.zone]) zones[t.zone]={'min':t.minSpend,'spots':[]};
+  // Ordena numericamente para preservar sequência 1→120
+  Object.entries(State.tables).sort((a,b)=>Number(a[0])-Number(b[0])).forEach(([id,t])=>{
+    if(!zones[t.zone]) zones[t.zone]={ min:t.minSpend, spots:[] };
     zones[t.zone].spots.push({id,...t});
   });
-  el.innerHTML = Object.entries(zones).map(([zone,data])=>`
-    <div class="zone-card">
-      <div class="zone-head">
-        <h4>${zone}</h4>
+
+  el.innerHTML = Object.entries(zones).map(([zone,data])=>{
+    const m = ZONE_META[zone] || { icon:'fa-chair', color:'#8899aa', bg:'rgba(136,153,170,.15)' };
+    const num = n => n.replace(/[^0-9]/g,'') || n;
+    return `
+    <div class="zone-section">
+      <div class="zone-section-head">
+        <div class="zone-section-title">
+          <div class="zone-icon" style="background:${m.bg};color:${m.color}"><i class="fas ${m.icon}"></i></div>
+          <span>${zone}</span>
+        </div>
         <span class="text-muted text-xs">Mín. ${fmtCurrency(data.min)}</span>
       </div>
-      <div class="spots-row">
+      <div class="table-grid">
         ${data.spots.map(s=>`
-          <div class="spot ${s.status} ${State.rsvp.selectedTable===s.id?'selected':''}"
+          <button class="table-btn ${s.status==='free'?'free':s.status} ${State.rsvp.selectedTable===s.id?'selected':''}"
             id="spot-${s.id}"
-            onclick="selectSpot('${s.id}')"
+            style="color:${s.status==='free'?m.color:'#555'};border-color:${s.status==='free'?m.color:'rgba(255,255,255,.1)'};${State.rsvp.selectedTable===s.id?`background:${m.bg}`:''}"
+            onclick="${s.status==='free'?`selectSpot('${s.id}')`:''}"
             title="${s.id}">
-            ${s.id.replace('AREIA','A').replace('DECK','D')}
-          </div>
+            ${num(s.id)}
+          </button>
         `).join('')}
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
+}
+
+// ── MESA PICKER (substitui input de texto) ─────────────────
+function buildMesaPicker(){
+  const el = document.getElementById('mesa-picker-grid');
+  if(!el) return;
+  const zones = {};
+  Object.entries(State.tables).sort((a,b)=>Number(a[0])-Number(b[0])).forEach(([id,t])=>{
+    if(!zones[t.zone]) zones[t.zone]=[];
+    zones[t.zone].push({id,...t});
+  });
+  const num = n => n.replace(/[^0-9]/g,'') || n;
+  el.innerHTML = Object.entries(zones).map(([zone,spots])=>{
+    const m = ZONE_META[zone] || { icon:'fa-chair', color:'#8899aa', bg:'rgba(136,153,170,.15)' };
+    return `
+    <div class="mesa-picker-zone">
+      <div class="mesa-picker-label" style="color:${m.color}"><i class="fas ${m.icon}"></i> ${zone}</div>
+      <div class="table-grid">
+        ${spots.map(s=>`
+          <button class="table-btn ${s.status}"
+            style="color:${s.status==='free'?m.color:'#444'};border-color:${s.status==='free'?m.color:'rgba(255,255,255,.1)'}"
+            onclick="${s.status==='free'?`pickMesa('${s.id}')`:''}"
+            title="${s.id}">
+            ${num(s.id)}
+          </button>
+        `).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function pickMesa(id){
+  if(!State.tables[id]){ toast('Mesa inválida','danger'); return; }
+  State.mesa.active=true;
+  State.mesa.tableId=id;
+  State.tables[id].status='occupied';
+  renderMesaView();
+  toast(`Mesa ${id} ativada!`,'success');
 }
 
 function selectSpot(id){
@@ -1509,7 +1666,7 @@ function renderKDS(){
     el.className = `kds-ticket ${o.status}`;
     el.innerHTML = `
       <div class="kds-ticket-head">
-        <span class="kds-mesa">${o.tableId} <small class="text-muted" style="font-weight:400;font-size:.75rem">#${o.id}</small></span>
+        <span class="kds-mesa">Mesa ${o.tableId} <small class="text-muted" style="font-weight:400;font-size:.75rem">#${o.id}</small></span>
         <span class="kds-timer ${isLate?'late':''}">${o.status==='prep'?min+'min':'novo'}</span>
       </div>
       <div class="kds-items">${items.map(i=>i.name).join('<br>')}</div>
@@ -1566,7 +1723,7 @@ function renderKDS(){
         if(foodItems.length===0) return '';
         return `<div style="padding:10px 12px;border-radius:var(--r-sm);background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.15);margin-bottom:8px">
           <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-            <span style="font-weight:700;font-size:.85rem;color:white">${o.tableId}</span>
+            <span style="font-weight:700;font-size:.85rem;color:white">Mesa ${o.tableId}</span>
             <span style="font-size:.7rem;color:var(--success)"><i class="fas fa-check"></i> Entregue</span>
           </div>
           <div style="font-size:.75rem;color:var(--muted);line-height:1.5">${foodItems.map(i=>i.name).join('<br>')}</div>
@@ -1590,7 +1747,7 @@ function renderKDS(){
         if(drinkItems.length===0) return '';
         return `<div style="padding:10px 12px;border-radius:var(--r-sm);background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.15);margin-bottom:8px">
           <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-            <span style="font-weight:700;font-size:.85rem;color:white">${o.tableId}</span>
+            <span style="font-weight:700;font-size:.85rem;color:white">Mesa ${o.tableId}</span>
             <span style="font-size:.7rem;color:var(--success)"><i class="fas fa-check"></i> Entregue</span>
           </div>
           <div style="font-size:.75rem;color:var(--muted);line-height:1.5">${drinkItems.map(i=>i.name).join('<br>')}</div>
@@ -1703,12 +1860,16 @@ function renderView(viewId){
 
 // ── DEMO HELPERS ──────────────────────────────────────────
 function seedDemoData(){
-  dispatchOrder('VIP-3','Web/NEXUS-Bot',[{name:'Combo Sunset VIP',price:550,cat:'food'},{name:'Aperol Spritz',price:45,cat:'drink'}]);
-  dispatchOrder('AREIA-2','Web-Reserva',[{name:'2x Corona Long Neck',price:44,cat:'drink'}]);
-  const o3=dispatchOrder('DECK-A','Mesa-Viva',[{name:'Polvo Grelhado',price:95,cat:'food'},{name:'Gin & Tônica',price:38,cat:'drink'}]);
+  // Mesa 3 = Balcão, Mesa 75 = Areia, Mesa 12 = Deck
+  dispatchOrder('3','Web/NEXUS-Bot',[{name:'Combo Sunset VIP',price:550,cat:'food'},{name:'Aperol Spritz Premium',price:45,cat:'drink'}]);
+  dispatchOrder('75','Web-Reserva',[{name:'2x Corona Extra 330ml',price:44,cat:'drink'}]);
+  const o3=dispatchOrder('12','Mesa-Viva',[{name:'Polvo Grelhado',price:95,cat:'food'},{name:'Gin & Tônica Premium',price:38,cat:'drink'}]);
   changeStatus(Object.keys(State.orders)[0],'approved');
   changeStatus(Object.keys(State.orders)[1],'prep');
   if(State.orders[o3]) { changeStatus(o3,'approved'); State.orders[o3].startTime=Date.now()-480000; }
+  State.tables['3'].status='occupied';
+  State.tables['75'].status='occupied';
+  State.tables['12'].status='occupied';
 }
 
 function demoSimulateOrder(){
@@ -1751,9 +1912,8 @@ function demoPeak(){
 function demoReset(){
   Object.keys(State.orders).forEach(k=>delete State.orders[k]);
   Object.values(State.tables).forEach(t=>{t.status='free';t.total=0;});
-  State.tables['VIP-3'].status='occupied';
-  State.tables['AREIA-2'].status='occupied';
-  State.tables['DECK-A'].status='reserved';
+  // Reset status das mesas demo
+  Object.keys(State.tables).forEach(k=>{ State.tables[k].status='free'; State.tables[k].total=0; });
   State.caixa.selectedId=null;
   State.mesa={active:false,tableId:null,total:0,draftCart:[],timeline:[]};
   buildZoneMap();
