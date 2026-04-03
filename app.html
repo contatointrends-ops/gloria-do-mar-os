@@ -560,20 +560,31 @@ input,select,textarea{font-family:var(--font)}
       </div>
     </section>
 
-    <!-- ── VIEW: KDS ── -->
+    <!-- ── VIEW: KDS COZINHA ── -->
     <section class="view-section" id="view-cozinha">
       <div class="view-header">
-        <h1>KDS — Produção</h1>
+        <h1><i class="fas fa-fire" style="color:#ef4444;margin-right:10px"></i>KDS — Cozinha</h1>
+        <span class="badge badge-danger" id="badge-coz-count" style="font-size:.8rem;padding:4px 14px"></span>
       </div>
-      <div class="kds-grid">
-        <div class="kds-col">
-          <div class="kds-col-header"><h3><i class="fas fa-utensils"></i> Cozinha</h3></div>
-          <div class="kds-body" id="kds-coz"></div>
+      <div class="kds-col" style="max-width:780px">
+        <div class="kds-col-header">
+          <h3><i class="fas fa-utensils"></i> Pratos em Produção</h3>
         </div>
-        <div class="kds-col">
-          <div class="kds-col-header"><h3><i class="fas fa-cocktail"></i> Bar</h3></div>
-          <div class="kds-body" id="kds-bar"></div>
+        <div class="kds-body" id="kds-coz" style="max-height:calc(100vh - 220px)"></div>
+      </div>
+    </section>
+
+    <!-- ── VIEW: KDS BAR ── -->
+    <section class="view-section" id="view-bar">
+      <div class="view-header">
+        <h1><i class="fas fa-cocktail" style="color:#a78bfa;margin-right:10px"></i>KDS — Bar</h1>
+        <span class="badge" style="background:rgba(139,92,246,.15);color:#a78bfa;font-size:.8rem;padding:4px 14px" id="badge-bar-count"></span>
+      </div>
+      <div class="kds-col" style="max-width:780px;border-color:rgba(139,92,246,.3)">
+        <div class="kds-col-header" style="border-color:rgba(139,92,246,.2)">
+          <h3 style="color:#a78bfa"><i class="fas fa-cocktail"></i> Bebidas em Produção</h3>
         </div>
+        <div class="kds-body" id="kds-bar" style="max-height:calc(100vh - 220px)"></div>
       </div>
     </section>
 
@@ -924,21 +935,23 @@ const TENANTS = {
 };
 
 const ROLES = [
-  { id:'customer', label:'Cliente', icon:'fa-user', color:'#06b6d4', views:['view-home','view-reserva','view-minha-mesa'], defaultView:'view-home', desc:'Cardápio, reservas e pedidos' },
-  { id:'garcom',   label:'Garçom', icon:'fa-concierge-bell', color:'#22c55e', views:['view-home','view-minha-mesa','view-caixa'], defaultView:'view-home', desc:'Atendimento e pedidos por mesa' },
-  { id:'cashier',  label:'Central / Caixa', icon:'fa-cash-register', color:'#f59e0b', views:['view-caixa','view-dashboard'], defaultView:'view-caixa', desc:'Aprovação de pedidos e dashboard' },
-  { id:'kitchen',  label:'Cozinha / Bar', icon:'fa-fire', color:'#ef4444', views:['view-cozinha'], defaultView:'view-cozinha', desc:'KDS em tempo real — tela sempre aberta', fullscreen:true },
-  { id:'manager',  label:'Gestor NEXUS', icon:'fa-brain', color:'#06b6d4', views:['view-caixa','view-cozinha','view-dashboard','view-ia-ops'], defaultView:'view-ia-ops', desc:'Operação completa com IA cognitiva' }
+  { id:'customer', label:'Cliente',        icon:'fa-user',           color:'#06b6d4', views:['view-home','view-reserva','view-minha-mesa'],                              defaultView:'view-home',    desc:'Cardápio, reservas e pedidos' },
+  { id:'garcom',   label:'Garçom',         icon:'fa-concierge-bell', color:'#22c55e', views:['view-home','view-minha-mesa','view-caixa'],                                defaultView:'view-home',    desc:'Atendimento e pedidos por mesa' },
+  { id:'cashier',  label:'Central / Caixa',icon:'fa-cash-register',  color:'#f59e0b', views:['view-caixa','view-dashboard'],                                            defaultView:'view-caixa',   desc:'Aprovação de pedidos e dashboard' },
+  { id:'kitchen',  label:'Cozinha',        icon:'fa-fire',           color:'#ef4444', views:['view-cozinha'],                                                           defaultView:'view-cozinha', desc:'KDS Cozinha — somente pratos', fullscreen:true },
+  { id:'bar',      label:'Bar',            icon:'fa-cocktail',       color:'#a78bfa', views:['view-bar'],                                                               defaultView:'view-bar',     desc:'KDS Bar — somente bebidas',    fullscreen:true },
+  { id:'manager',  label:'Gestor NEXUS',   icon:'fa-brain',          color:'#06b6d4', views:['view-caixa','view-cozinha','view-bar','view-dashboard','view-ia-ops'],     defaultView:'view-ia-ops',  desc:'Operação completa com IA cognitiva' }
 ];
 
 const NAV_LABELS = {
   'view-home': { icon:'fa-home', label:'Início & Ofertas' },
   'view-reserva': { icon:'fa-umbrella-beach', label:'Reservas VIP' },
   'view-minha-mesa': { icon:'fa-chair', label:'Mesa Viva' },
-  'view-caixa': { icon:'fa-cash-register', label:'Caixa (Triagem)' },
-  'view-cozinha': { icon:'fa-fire', label:'KDS (Produção)' },
-  'view-dashboard': { icon:'fa-chart-line', label:'Analytics' },
-  'view-ia-ops': { icon:'fa-bolt', label:'NEXUS iA Core' }
+  'view-caixa':     { icon:'fa-cash-register', label:'Caixa (Triagem)' },
+  'view-cozinha':   { icon:'fa-fire',          label:'KDS Cozinha' },
+  'view-bar':       { icon:'fa-cocktail',      label:'KDS Bar' },
+  'view-dashboard': { icon:'fa-chart-line',    label:'Analytics' },
+  'view-ia-ops':    { icon:'fa-bolt',          label:'NEXUS iA Core' }
 };
 
 // ── HELPERS ──────────────────────────────────────────────
@@ -990,14 +1003,14 @@ function doLogin(){
   document.getElementById('screen-auth').style.display='none';
   document.getElementById('screen-app').style.display='block';
   initApp();
-  // Modo full-screen para cozinha (sem sidebar)
+  // Modo full-screen para Cozinha e Bar (sem sidebar)
   if(State.user.fullscreen){
     const sidebar = document.querySelector('.sidebar');
     if(sidebar) sidebar.style.display = 'none';
     document.querySelector('.main-content').style.padding = '16px';
-    // Auto-refresh a cada 20s para cozinha
     setInterval(()=>{ renderAll(); }, 20000);
-    toast('🔥 Modo Cozinha ativo — atualizando a cada 20s','info');
+    if(State.user.id === 'kitchen') toast('🔥 Modo Cozinha ativo — atualizando a cada 20s','danger');
+    if(State.user.id === 'bar')     toast('🍹 Modo Bar ativo — atualizando a cada 20s','info');
   }
   if(State.user.id === 'manager') {
     toast('NEXUS iA conectado e analisando ambiente.','success');
@@ -1451,40 +1464,60 @@ function caixaAction(action){
 
 // ── KDS ───────────────────────────────────────────────────
 function renderKDS(){
-  const coz=document.getElementById('kds-coz');
-  const bar=document.getElementById('kds-bar');
-  if(!coz||!bar) return;
-  const active=Object.values(State.orders).filter(o=>['approved','prep'].includes(o.status));
+  const coz = document.getElementById('kds-coz');
+  const bar = document.getElementById('kds-bar');
+  const active = Object.values(State.orders).filter(o=>['approved','prep'].includes(o.status));
 
-  let cc=0, bc=0;
-  coz.innerHTML=''; bar.innerHTML='';
+  const emptyHtml = '<div class="empty-state" style="padding:30px 0"><i class="fas fa-check-circle"></i><p>Tudo em dia!</p></div>';
 
-  if(active.length===0){
-    const empty='<div class="empty-state" style="padding:30px 0"><i class="fas fa-check"></i><p>Sem fila</p></div>';
-    coz.innerHTML=empty; bar.innerHTML=empty;
-    return;
-  }
-
-  active.forEach(o=>{
-    const isDrink=o.items.some(i=>i.cat==='drink'||/gin|corona|drink|spritz|tônica|bar|cerveja/i.test(i.name));
-    const min=o.startTime?elapsed(o.startTime):0;
-    const isLate=min>12;
-    const el=document.createElement('div');
-    el.className=`kds-ticket ${o.status}`;
-    el.innerHTML=`
+  const makeTicket = (o, items, btnColor) => {
+    const min = o.startTime ? elapsed(o.startTime) : 0;
+    const isLate = min > 12;
+    const el = document.createElement('div');
+    el.className = `kds-ticket ${o.status}`;
+    el.innerHTML = `
       <div class="kds-ticket-head">
         <span class="kds-mesa">${o.tableId} <small class="text-muted" style="font-weight:400;font-size:.75rem">#${o.id}</small></span>
-        <span class="kds-timer ${isLate?'late':''}">${o.status==='prep'?min+'min':'new'}</span>
+        <span class="kds-timer ${isLate?'late':''}">${o.status==='prep'?min+'min':'novo'}</span>
       </div>
-      <div class="kds-items">${o.items.map(i=>i.name).join('<br>')}</div>
+      <div class="kds-items">${items.map(i=>i.name).join('<br>')}</div>
       <div class="kds-actions">
         ${o.status==='approved'?`<button class="btn btn-sm btn-secondary" onclick="kdsAction('${o.id}','prep')"><i class="fas fa-fire"></i> Preparar</button>`:''}
         <button class="btn btn-sm btn-success" onclick="kdsAction('${o.id}','ready')"><i class="fas fa-check"></i> Pronto!</button>
       </div>
     `;
-    if(isDrink){ bar.appendChild(el); bc++; }
-    else { coz.appendChild(el); cc++; }
-  });
+    return el;
+  };
+
+  // Cozinha — filtra apenas itens de comida (cat:'food')
+  if(coz){
+    coz.innerHTML = '';
+    let cc = 0;
+    active.forEach(o=>{
+      const foodItems = o.items.filter(i=> i.cat==='food' || (i.cat!=='drink' && !/gin|corona|spritz|tônica|cerveja|caipirinha|suco/i.test(i.name)));
+      if(foodItems.length === 0) return;
+      coz.appendChild(makeTicket(o, foodItems));
+      cc++;
+    });
+    if(cc===0) coz.innerHTML = emptyHtml;
+    const badge = document.getElementById('badge-coz-count');
+    if(badge) badge.textContent = cc > 0 ? `${cc} pedido${cc>1?'s':''}` : '';
+  }
+
+  // Bar — filtra apenas itens de bebida (cat:'drink')
+  if(bar){
+    bar.innerHTML = '';
+    let bc = 0;
+    active.forEach(o=>{
+      const drinkItems = o.items.filter(i=> i.cat==='drink' || /gin|corona|spritz|tônica|cerveja|caipirinha|suco/i.test(i.name));
+      if(drinkItems.length === 0) return;
+      bar.appendChild(makeTicket(o, drinkItems));
+      bc++;
+    });
+    if(bc===0) bar.innerHTML = emptyHtml;
+    const badge = document.getElementById('badge-bar-count');
+    if(badge) badge.textContent = bc > 0 ? `${bc} pedido${bc>1?'s':''}` : '';
+  }
 }
 
 function kdsAction(id,status){
